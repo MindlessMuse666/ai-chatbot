@@ -9,11 +9,13 @@ export const ru = {
       name: "ФИО",
       password: "Пароль",
       confirmPassword: "Подтвердите пароль",
+      username: "Имя пользователя",
       placeholder: {
-        email: "example@mail.com",
-        name: "Иванов Иван Иванович",
+        email: "Введите Email",
+        name: "Введите ФИО",
         password: "Введите пароль",
-        confirmPassword: "Повторите пароль"
+        confirmPassword: "Повторите пароль",
+        username: "Введите имя пользователя"
       },
       forgotPassword: "Забыли пароль?",
       login: "Вход",
