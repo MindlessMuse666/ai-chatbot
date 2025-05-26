@@ -1,6 +1,6 @@
 # 🤖 AI-Chatbot — умный ИИ-поисковик для ООО "Гравитон"
 
-![AI-Chatbot Screenshot](./public/demo-screenshot.png)
+![AI-Chatbot Screenshot](frontend/public/screenshots/demo-chatbox.png "AI-Chatbot Screenshot")
 
 ## 🚀 О проекте
 
@@ -31,7 +31,7 @@ AI-Chatbot — это современный фронтенд для умног�
 ## 🛠️ Быстрый старт
 
 ```bash
-git clone https://github.com/your-org/ai-chatbot.git
+git clone https://github.com/MindlessMuse666/ai-chatbot.git
 cd ai-chatbot/frontend
 npm install
 npm run dev
@@ -47,26 +47,27 @@ npm run mock-server
 
 > _Скриншоты интерфейса:_
 
-![Login](./public/demo-login.png)
-![Chat List](./public/demo-chats.png)
-![Chat Box](./public/demo-chatbox.png)
+![Login](frontend/public/screenshots/demo-login.png)
+![Register](frontend/public/screenshots/demo-register.png)
+![Chat List](frontend/public/screenshots/demo-chats.png)
+![Chat Box](frontend/public/screenshots/demo-chatbox.png)
 
 _(В будущем будет доступна онлайн-демо-версия на отдельном домене)_
 
 ## 📄 Техническое задание
 
-Примерное ТЗ доступно в файле [`requirements_specification_graviton.txt`](REQUIREMENTS-SPECIFICATION-GRAVITON.md).
+Примерное ТЗ доступно в файле [REQUIREMENTS-SPECIFICATION-GRAVITON.md](REQUIREMENTS-SPECIFICATION-GRAVITON.md "Техническое задание").
 
 ## 📝 Лицензия
 
-Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
+Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE "Лицензия").
 
 ## 👥 Автор
 
 MindlessMuse666
-- [GitHub](https://github.com/MindlessMuse666)
-- [Telegram](t.me/mindless_muse)
-- [Gmail](mindlessmuse.666@gmail.com)
+- [GitHub](https://github.com/MindlessMuse666 "Владислав: github.com/MindlessMuse666")
+- [Telegram](t.me/mindless_muse "@mindless_muse")
+- [Gmail](mindlessmuse.666@gmail.com "mindlessmuse.666@gmail.com")
 
 ## 🙏 Благодарности
 
