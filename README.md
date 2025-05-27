@@ -62,7 +62,11 @@ _(В будущем будет доступна онлайн-демо-верси
 
 Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE "Лицензия").
 
-## 👥 Автор
+## 👥 Авторы
+
+RoudgerLRG
+- [GitHub](https://github.com/MindlessMuse666 "Анастасия: github.com/RoudgerGot")
+- [Telegram](t.me/mindless_muse "@Fukkazzumi")
 
 MindlessMuse666
 - [GitHub](https://github.com/MindlessMuse666 "Владислав: github.com/MindlessMuse666")
