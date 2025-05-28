@@ -24,7 +24,8 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
     handleWebSocketMessage,
   } = useChatStore();
 
-  const { sendMessage: sendWebSocketMessage } = useWebSocket(handleWebSocketMessage);
+  // Подписываемся на событие 'message' через Socket.IO
+  const { sendMessage: sendSocketMessage } = useWebSocket('message', handleWebSocketMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,14 +55,14 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
         type: MessageType.TEXT,
       };
 
-      // Отправляем сообщение через WebSocket
-      sendWebSocketMessage({
-        type: 'message',
-        payload: messageDto,
-      });
+      // Отправляем сообщение через Socket.IO
+      sendSocketMessage('sendMessage', messageDto);
 
       // Также сохраняем в базе данных через REST API
       await sendMessage(messageDto);
+
+      // ДОБАВИТЬ: обновить список сообщений после отправки
+      await fetchMessages(chatId);
     } catch (error) {
       toast.error('Failed to send message');
     }

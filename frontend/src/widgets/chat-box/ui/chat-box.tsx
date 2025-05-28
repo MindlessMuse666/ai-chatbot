@@ -14,7 +14,8 @@ import { Button } from "@heroui/react"
 
 const ChatBox = () => {
   const { t } = useTranslation()
-  const { id: chatId } = useParams<{ id: string }>()
+  const params = useParams<{ id?: string }>();
+  const chatId = params?.id ?? '';
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const { ref: loadMoreRef, inView } = useInView()
   const [initialLoad, setInitialLoad] = useState(true)
@@ -129,6 +130,12 @@ const ChatBox = () => {
     }
   }, [data, isLoadingMore, scrollToBottom, isAtBottom])
 
+  useEffect(() => {
+    setOptimisticMessages([]);
+    setIsAssistantTyping(false);
+    setInitialLoad(true);
+  }, [chatId]);
+
   return (
     <div className="w-full h-full flex flex-col bg-deep-background rounded-lg p-2 md:p-4 mx-2 md:mx-10 relative">
       <div className="flex-1 overflow-hidden mb-4">
@@ -156,7 +163,7 @@ const ChatBox = () => {
               
               {data?.pages.slice().reverse().map((page, i) => (
                 <div key={i}>
-                  {page.messages.slice().reverse().map((message) => (
+                  {page.messages.slice().reverse().map((message: any) => (
                     <MessageCard 
                       key={message.id}
                       {...message}

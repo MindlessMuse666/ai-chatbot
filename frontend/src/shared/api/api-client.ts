@@ -1,6 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1.0';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+    ? '/api/v1.0'
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1.0';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

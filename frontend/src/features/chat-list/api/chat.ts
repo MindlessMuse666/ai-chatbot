@@ -7,19 +7,19 @@ import { useTranslation } from "react-i18next"
 
 const chatApi = {
   getChats: async (): Promise<Chat[]> => {
-    const response = await api.get('/chat')
+    const response = await api.get('/api/v1.0/chats')
     return response.data
   },
   createChat: async (data: { title: string }): Promise<Chat> => {
-    const response = await api.post('/chat', data)
+    const response = await api.post('/api/v1.0/chats', data)
     return response.data
   },
   changeChatTitle: async (id: string, data: { title: string }): Promise<Chat> => {
-    const response = await api.put(`/chat/${id}`, data)
+    const response = await api.put(`/api/v1.0/chats/${id}`, data)
     return response.data
   },
   deleteChat: async (data: { id: string }): Promise<void> => {
-    const response = await api.delete(`/chat/${data.id}`)
+    const response = await api.delete(`/api/v1.0/chats/${data.id}`)
     return response.data
   }
 }

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { chatApi } from '../api/chat-api';
 import type { Chat, Message, CreateChatDto, UpdateChatDto, CreateMessageDto, UpdateMessageDto } from './types';
-import type { WebSocketMessage } from '@/shared/api/websocket-client';
 
 interface ChatState {
   chats: Chat[];
@@ -28,8 +27,8 @@ interface ChatState {
   updateMessage: (messageId: string, dto: UpdateMessageDto) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
 
-  // WebSocket operations
-  handleWebSocketMessage: (message: WebSocketMessage) => void;
+  // Socket.IO operations
+  handleWebSocketMessage: (message: any) => void;
 }
 
 const MOCK_CHATS: Chat[] = [
@@ -282,7 +281,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  // WebSocket operations
+  // Socket.IO operations
   handleWebSocketMessage: (message) => {
     switch (message.type) {
       case 'message':

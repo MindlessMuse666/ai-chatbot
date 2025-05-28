@@ -62,4 +62,10 @@ declare module 'next/navigation' {
     has: (key: string) => boolean;
     // ... другие методы, когда будут использоваться.
   };
-} 
+
+  // declare module 'msw' {
+  //   import { RestHandler, RestRequest, ResponseResolver, rest, DefaultRequestBodyType, PathParams, SetupWorkerApi, SetupWorkerOptions } from 'msw';
+  //   export { RestHandler, RestRequest, ResponseResolver, rest, DefaultRequestBodyType, PathParams, SetupWorkerApi, SetupWorkerOptions };
+  //   export function setupWorker(...handlers: RestHandler[]): SetupWorkerApi;
+  // }
+}

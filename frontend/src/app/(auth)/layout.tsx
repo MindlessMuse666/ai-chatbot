@@ -19,7 +19,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
       <div className="relative z-10 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center">
-          <Image src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} alt="logo" width={50} height={50} className="mb-10" />
+          <Image src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} alt="logo" width={50} height={50} className="mb-10" />  {/* TODO: протестить размер логотипа, чтобы не было предупреждений в консоли + поставить его на место */}
           {children}
         </div>
       </div>

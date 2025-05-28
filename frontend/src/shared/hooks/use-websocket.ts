@@ -1,23 +1,24 @@
 import { useEffect, useCallback } from 'react';
-import { wsClient, type WebSocketMessage } from '../api/websocket-client';
+import { getSocket } from '../api/socket-service';
 
-export const useWebSocket = (onMessage?: (message: WebSocketMessage) => void) => {
+export const useWebSocket = (event: string, onMessage?: (...args: any[]) => void) => {
   useEffect(() => {
-    wsClient.connect();
-
-    let unsubscribe: (() => void) | undefined;
+    const socket = getSocket();
+    socket.connect();
     if (onMessage) {
-      unsubscribe = wsClient.subscribe(onMessage);
+      socket.on(event, onMessage);
     }
-
     return () => {
-      unsubscribe?.();
-      wsClient.disconnect();
+      if (onMessage) {
+        socket.off(event, onMessage);
+      }
+      socket.disconnect();
     };
-  }, [onMessage]);
+  }, [event, onMessage]);
 
-  const sendMessage = useCallback((message: WebSocketMessage) => {
-    wsClient.send(message);
+  const sendMessage = useCallback((type: string, payload: any) => {
+    const socket = getSocket();
+    socket.emit(type, payload);
   }, []);
 
   return { sendMessage };

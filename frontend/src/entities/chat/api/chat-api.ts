@@ -51,14 +51,14 @@ export const chatApi = {
 
   // Message operations
   getMessages: async ({ chatId, page = 1, limit = 20 }: GetMessagesParams): Promise<Message[]> => {
-    const response = await apiClient.get(`/chat/${chatId}/messages`, {
+    const response = await apiClient.get(`/api/v1.0/chats/${chatId}/messages`, {
       params: { page, limit },
     });
     return response.data;
   },
 
   createMessage: async (dto: CreateMessageDto): Promise<Message> => {
-    const response = await apiClient.post(`/chat/${dto.chatId}/messages`, dto);
+    const response = await apiClient.post(`/api/v1.0/chats/${dto.chatId}/messages`, dto);
     return response.data;
   },
 

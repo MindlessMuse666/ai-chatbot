@@ -1,0 +1,35 @@
+/* Генерация моковых (фейковых) данных */
+
+import { faker } from '@faker-js/faker';
+
+export const adminUser = {
+  id: '1',
+  email: 'dev@graviton.ru',
+  password: 'zmvqfFNe',
+  role: 'ADMIN',
+  name: 'Админ',
+  avatar: faker.image.avatar(),
+};
+
+export function generateChats(count = 5) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: String(i + 1),
+    name: faker.commerce.productName(),
+    archived: false,
+    createdAt: faker.date.past().toISOString(),
+    updatedAt: faker.date.recent().toISOString(),
+  }));
+}
+
+export function generateMessages(chatId: string, count = 10) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: faker.string.uuid(),
+    chatId,
+    userId: '1',
+    content: faker.lorem.sentence(),
+    type: 'TEXT',
+    createdAt: faker.date.recent().toISOString(),
+    updatedAt: faker.date.recent().toISOString(),
+    isEdited: false
+  }));
+}

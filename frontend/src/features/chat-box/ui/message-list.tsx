@@ -30,61 +30,63 @@ export const MessageList = ({ messages }: MessageListProps) => {
 
   return (
     <div className="space-y-4">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`
-            flex gap-3 max-w-[80%]
-            ${message.sender === MessageSender.USER ? 'ml-auto' : 'mr-auto'}
-          `}
-        >
+      {messages.map((message) => {
+        const sender = (message as any).userId === 'assistant' ? (MessageSender as any).ASSISTANT : (MessageSender as any).USER;
+        return (
           <div
+            key={message.id}
             className={`
-              rounded-lg p-3
-              ${message.sender === MessageSender.USER 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-muted'
-              }
+              flex gap-3 max-w-[80%]
+              ${sender === (MessageSender as any).USER ? 'ml-auto' : 'mr-auto'}
             `}
           >
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm whitespace-pre-wrap break-words">
-                {message.content}
-              </p>
-              
-              {message.sender === MessageSender.USER && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => handleEditMessage(message)}
-                  >
-                    <Edit2 className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => handleDeleteMessage(message.id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </div>
+            <div
+              className={`
+                rounded-lg p-3
+                ${sender === (MessageSender as any).USER 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted'
+                }
+              `}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm whitespace-pre-wrap break-words">
+                  {message.content}
+                </p>
+                {sender === (MessageSender as any).USER && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleEditMessage(message)}
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleDeleteMessage(message.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
 
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs opacity-70">
-                {format(new Date(message.createdAt), 'HH:mm')}
-              </span>
-              {message.isEdited && (
-                <span className="text-xs opacity-70">(edited)</span>
-              )}
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs opacity-70">
+                  {format(new Date(message.createdAt), 'HH:mm')}
+                </span>
+                {message.isEdited && (
+                  <span className="text-xs opacity-70">(edited)</span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }; 
