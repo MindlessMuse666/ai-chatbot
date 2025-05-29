@@ -75,13 +75,19 @@ export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) 
           )}
         </div>
         
-        {chat.lastMessage && (
+        {chat.lastMessage && chat.lastMessage.versions?.[0]?.content ? (
           <div className="flex items-center gap-2 mt-1">
             <p className="text-xs text-gray-500 truncate">
-              {chat.lastMessage.versions?.[0]?.content}
+              {chat.lastMessage.versions[0].content}
             </p>
             <span className="text-xs text-gray-400">
-              {chat.lastMessage.versions?.[0]?.createdAt ? format(new Date(chat.lastMessage.versions[0].createdAt), 'HH:mm') : ''}
+              {chat.lastMessage.versions[0].createdAt ? format(new Date(chat.lastMessage.versions[0].createdAt), 'HH:mm') : ''}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-gray-400">
+              {chat.createdAt ? format(new Date(chat.createdAt), 'HH:mm') : ''}
             </span>
           </div>
         )}

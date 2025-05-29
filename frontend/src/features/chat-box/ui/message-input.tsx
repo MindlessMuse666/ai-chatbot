@@ -5,9 +5,10 @@ import { Button } from '@heroui/react';
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
+  disabled?: boolean;
 }
 
-export const MessageInput = ({ onSend }: MessageInputProps) => {
+export const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -60,13 +61,14 @@ export const MessageInput = ({ onSend }: MessageInputProps) => {
             focus:outline-none focus:ring-2 focus:ring-primary
           "
           rows={1}
+          disabled={disabled}
         />
       </div>
 
       <Button
         type="submit"
         size="icon"
-        disabled={!content.trim() || isSending}
+        disabled={!content.trim() || isSending || disabled}
         className="h-[44px] w-[44px]"
       >
         <Send className="h-5 w-5" />

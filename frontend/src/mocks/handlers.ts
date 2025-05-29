@@ -115,15 +115,16 @@ export const handlers = [
   // Создание чата (поддержка title и name)
   http.post('/api/v1.0/chat', async ({ request }) => {
     const body = (await request.json()) as { name?: string; title?: string };
-    const generatedMessages = generateMessages(String(Date.now()), 20);
+    // const generatedMessages = generateMessages(String(Date.now()), 20);
+    const now = new Date().toISOString();
     const newChat = {
       id: String(Date.now()),
-      title: generatedMessages[0]?.versions[0]?.content || `Новый чат ${chats.length + 1}`,
-      messages: generatedMessages,
-      lastMessage: generatedMessages[generatedMessages.length - 1],
-      firstMessage: generatedMessages[0],
-      createdAt: generatedMessages[0]?.versions[0]?.createdAt || new Date().toISOString(),
-      updatedAt: generatedMessages[generatedMessages.length - 1]?.versions[0]?.createdAt || new Date().toISOString(),
+      title: `Новый чат ${chats.length + 1}`,
+      messages: [],
+      lastMessage: {} as any,
+      firstMessage: {} as any,
+      createdAt: now,
+      updatedAt: now,
       archived: false,
     };
     chats.push(newChat);
@@ -210,6 +211,13 @@ export const handlers = [
     console.log('[MSW] Message created:', newMessage);
     // Эмулируем "ответ ассистента" через 1.5 секунды (можно усложнить)
     setTimeout(() => {
+      // Найти дату последнего сообщения
+      const lastMsgArr = messages[chatId as string];
+      let lastDate = new Date();
+      if (lastMsgArr && lastMsgArr.length > 0) {
+        const last = lastMsgArr[lastMsgArr.length - 1];
+        lastDate = new Date(last.versions?.[0]?.createdAt || last.createdAt || Date.now());
+      }
       const assistantMessage = {
         id: String(Date.now() + 1),
         chatId: chatId as string,
@@ -218,7 +226,7 @@ export const handlers = [
         versions: [{
           content: 'Это ответ ассистента (мок).',
           type: MessageType.TEXT,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(lastDate.getTime() + 1000).toISOString(),
         }],
       };
       if (!messages[chatId as string]) {
@@ -239,16 +247,6 @@ export const handlers = [
   }),
   http.get('/api/v1.0/chat/archived', () => {
     return HttpResponse.json(chats.filter(c => c.archived), { status: 200 });
-  }),
-
-  // Получение одного чата по id
-  http.get('/api/v1.0/chat/:id', ({ params }) => {
-    const { id } = params;
-    const chat = chats.find(c => c.id === id);
-    if (chat) {
-      return HttpResponse.json(chat, { status: 200 });
-    }
-    return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
   }),
 
   // TODO: добавить другие эндпоинты по необходимости
