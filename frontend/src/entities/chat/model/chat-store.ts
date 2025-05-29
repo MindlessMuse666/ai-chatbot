@@ -10,7 +10,8 @@ interface ChatState {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  
+  isAwaitingAssistant: boolean;
+
   // Chat operations
   fetchChats: () => Promise<void>;
   fetchArchivedChats: () => Promise<void>;
@@ -21,7 +22,7 @@ interface ChatState {
   archiveChat: (id: string) => Promise<void>;
   unarchiveChat: (id: string) => Promise<void>;
   setCurrentChat: (chat: Chat | null) => void;
-  
+
   // Message operations
   fetchMessages: (chatId: string, page?: number) => Promise<void>;
   sendMessage: (dto: CreateMessageDto) => Promise<void>;
@@ -68,6 +69,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
+  isAwaitingAssistant: false,
 
   // Chat operations
   fetchChats: async () => {
@@ -81,9 +83,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       set({ chats, isLoading: false });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch chats',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -94,9 +96,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const archivedChats = await chatApi.getArchivedChats();
       set({ archivedChats, isLoading: false });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch archived chats',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -105,14 +107,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const newChat = await chatApi.createChat(dto);
-      set(state => ({ 
+      set(state => ({
         chats: [newChat, ...state.chats],
-        isLoading: false 
+        isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to create chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -122,16 +124,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const updatedChat = await chatApi.updateChat(id, dto);
       set(state => ({
-        chats: state.chats.map(chat => 
+        chats: state.chats.map(chat =>
           chat.id === id ? updatedChat : chat
         ),
         currentChat: state.currentChat?.id === id ? updatedChat : state.currentChat,
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to update chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -146,9 +148,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -164,9 +166,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -182,9 +184,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to archive chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -199,9 +201,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to unarchive chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -226,30 +228,35 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch messages',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
 
   sendMessage: async (dto) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, isAwaitingAssistant: true });
     try {
       const message = await chatApi.createMessage(dto);
       set(state => ({
         messages: [...state.messages, message],
-        chats: state.chats.map(chat => 
-          chat.id === dto.chatId 
+        chats: state.chats.map(chat =>
+          chat.id === dto.chatId
             ? { ...chat, lastMessage: message }
             : chat
         ),
         isLoading: false
       }));
+      // Ждём появления ответа ассистента (через 1.5 сек)
+      setTimeout(() => {
+        set({ isAwaitingAssistant: false });
+      }, 1600);
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to send message',
-        isLoading: false 
+        isLoading: false,
+        isAwaitingAssistant: false
       });
     }
   },
@@ -259,15 +266,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const updatedMessage = await chatApi.updateMessage(messageId, dto);
       set(state => ({
-        messages: state.messages.map(message => 
+        messages: state.messages.map(message =>
           message.id === messageId ? updatedMessage : message
         ),
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to update message',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -281,9 +288,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete message',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -295,13 +302,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const newMessage = message.payload as Message;
         set(state => ({
           messages: [...state.messages, newMessage],
-          chats: state.chats.map(chat => 
-            chat.id === newMessage.chatId 
+          chats: state.chats.map(chat =>
+            chat.id === newMessage.chatId
               ? { ...chat, lastMessage: newMessage }
               : chat
           ),
         }));
-        
+
         // Имитируем ответ ассистента через 1.5 секунды
         if (newMessage.sender === MessageSender.USER) {
           setTimeout(() => {
@@ -315,11 +322,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
               isEdited: false,
               sender: MessageSender.AI,
             };
-            
+
             set(state => ({
               messages: [...state.messages, assistantMessage],
-              chats: state.chats.map(chat => 
-                chat.id === assistantMessage.chatId 
+              chats: state.chats.map(chat =>
+                chat.id === assistantMessage.chatId
                   ? { ...chat, lastMessage: assistantMessage }
                   : chat
               ),
@@ -331,11 +338,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       case 'chat_update':
         const updatedChat = message.payload as Chat;
         set(state => ({
-          chats: state.chats.map(chat => 
+          chats: state.chats.map(chat =>
             chat.id === updatedChat.id ? updatedChat : chat
           ),
-          currentChat: state.currentChat?.id === updatedChat.id 
-            ? updatedChat 
+          currentChat: state.currentChat?.id === updatedChat.id
+            ? updatedChat
             : state.currentChat,
         }));
         break;

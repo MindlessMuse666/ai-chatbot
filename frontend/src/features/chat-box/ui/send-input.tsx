@@ -23,7 +23,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const maxSymbols = 10000
-  const { sendMessage, isLoading } = useChatStore();
+  const { sendMessage, isLoading, isAwaitingAssistant } = useChatStore();
 
   const handleDragEnter = (e: any) => {
     e.preventDefault()
@@ -192,6 +192,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
           placeholder={t('chat.placeholder.send')}
           rows={1}
           className="flex-grow resize-none px-3 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px] max-h-[200px]"
+          disabled={isAwaitingAssistant}
         />
         <input
           type="file"
@@ -218,7 +219,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
           radius="md"
           isLoading={isLoading}
           className="bg-primary-foreground text-background shadow-sm transition-all duration-200 hover:bg-primary-foreground/90 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-          isDisabled={!message.trim() || isOverLimit || isLoading || uploadingFiles.some((file: UploadingFile) => file.progress !== 100)}
+          isDisabled={!message.trim() || isOverLimit || isLoading || isAwaitingAssistant || uploadingFiles.some((file: UploadingFile) => file.progress !== 100)}
         >
           <ArrowUp size={18} />
         </Button>

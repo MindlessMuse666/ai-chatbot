@@ -73,16 +73,13 @@ export const handlers = [
     return HttpResponse.json(adminUser, { status: 200 });
   }),
 
-  // Получение чатов (множественное и единственное число)
-  http.get('/api/v1.0/chats', () => {
-    return HttpResponse.json(chats, { status: 200 });
-  }),
+  // Получение чатов
   http.get('/api/v1.0/chat', () => {
     return HttpResponse.json(chats, { status: 200 });
   }),
 
   // Получение сообщений с поддержкой offset/limit и page/limit
-  http.get('/api/v1.0/chats/:chatId/messages', ({ params, request }) => {
+  http.get('/api/v1.0/chat/:chatId/messages', ({ params, request }) => {
     const { chatId } = params;
     const url = new URL(request.url);
     const offset = url.searchParams.has('offset')
@@ -103,20 +100,6 @@ export const handlers = [
   }),
 
   // Создание чата (множественное и единственное число, поддержка title и name)
-  http.post('/api/v1.0/chats', async ({ request }) => {
-    const body = (await request.json()) as { name?: string; title?: string };
-    const newChat: Chat = {
-      id: String(Date.now()),
-      title: body.title || body.name || `Чат ${chats.length + 1}`,
-      lastMessage: undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      archived: false,
-    };
-    chats.unshift(newChat);
-    messages[newChat.id] = generateMessages(newChat.id, 20);
-    return HttpResponse.json(newChat, { status: 201 });
-  }),
   http.post('/api/v1.0/chat', async ({ request }) => {
     const body = (await request.json()) as { name?: string; title?: string };
     const newChat: Chat = {
@@ -129,11 +112,12 @@ export const handlers = [
     };
     chats.unshift(newChat);
     messages[newChat.id] = generateMessages(newChat.id, 20);
+    console.log('[MSW] Chat created:', newChat);
     return HttpResponse.json(newChat, { status: 201 });
   }),
 
   // Обновление чата (PUT/PATCH)
-  http.put('/api/v1.0/chats/:id', async ({ params, request }) => {
+  http.put('/api/v1.0/chat/:id', async ({ params, request }) => {
     const { id } = params;
     const body = (await request.json()) as { name?: string; title?: string };
     const chat = chats.find((c) => c.id === id);
@@ -144,7 +128,7 @@ export const handlers = [
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
   }),
-  http.patch('/api/v1.0/chats/:id', async ({ params, request }) => {
+  http.patch('/api/v1.0/chat/:id', async ({ params, request }) => {
     const { id } = params;
     const body = (await request.json()) as { name?: string; title?: string };
     const chat = chats.find((c) => c.id === id);
@@ -157,7 +141,7 @@ export const handlers = [
   }),
 
   // Мягкое удаление чата
-  http.delete('/api/v1.0/chats/:id', ({ params }) => {
+  http.delete('/api/v1.0/chat/:id', ({ params }) => {
     const { id } = params;
     chats = chats.filter((c) => c.id !== id);
     delete messages[id as string];
@@ -165,7 +149,7 @@ export const handlers = [
   }),
 
   // Архивация/разархивация чата
-  http.put('/api/v1.0/chats/:id/archive', ({ params }) => {
+  http.put('/api/v1.0/chat/:id/archive', ({ params }) => {
     const { id } = params;
     const chat = chats.find((c) => c.id === id);
     if (chat) {
@@ -174,7 +158,7 @@ export const handlers = [
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
   }),
-  http.put('/api/v1.0/chats/:id/unarchive', ({ params }) => {
+  http.put('/api/v1.0/chat/:id/unarchive', ({ params }) => {
     const { id } = params;
     const chat = chats.find((c) => c.id === id);
     if (chat) {
@@ -185,7 +169,7 @@ export const handlers = [
   }),
 
   // Отправка сообщения (реалистично: сохраняем, обновляем lastMessage, эмулируем ассистента)
-  http.post('/api/v1.0/chats/:chatId/messages', async ({ params, request }) => {
+  http.post('/api/v1.0/chat/:chatId/messages', async ({ params, request }) => {
     const { chatId } = params;
     const { content, type } = (await request.json()) as { content: string; type: string };
     const newMessage: Message = {
@@ -209,6 +193,7 @@ export const handlers = [
       chat.lastMessage = newMessage;
       chat.updatedAt = newMessage.createdAt;
     }
+    console.log('[MSW] Message created:', newMessage);
     // Эмулируем "ответ ассистента" через 1.5 секунды (можно усложнить)
     setTimeout(() => {
       const assistantMessage: Message = {
@@ -227,6 +212,7 @@ export const handlers = [
         chat.lastMessage = assistantMessage;
         chat.updatedAt = assistantMessage.createdAt;
       }
+      console.log('[MSW] Assistant message created:', assistantMessage);
     }, 1500);
     return HttpResponse.json(newMessage, { status: 201 });
   }),
@@ -235,7 +221,7 @@ export const handlers = [
   http.get('/api/v1.0/chat/archived', () => {
     return HttpResponse.json([], { status: 200 });
   }),
-  http.get('/api/v1.0/chats/archived', () => {
+  http.get('/api/v1.0/chat/archived', () => {
     return HttpResponse.json(chats.filter((c) => c.archived), { status: 200 });
   }),
 
