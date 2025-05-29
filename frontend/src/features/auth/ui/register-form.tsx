@@ -19,10 +19,16 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
+/**
+ * RegisterForm — форма регистрации пользователя.
+ * Использует react-hook-form, Zod для валидации, интеграцию с Zustand store.
+ * Показывает ошибки через toast, уведомляет об успешной регистрации.
+ */
 export function RegisterForm() {
   const { t } = useTranslation()
   const { register: authStoreRegister, isLoading } = useAuthStore()
 
+  // Описание полей формы
   const fields: FormField[] = [
     {
       name: 'email',
@@ -60,6 +66,7 @@ export function RegisterForm() {
     }
   ]
 
+  // Обработка отправки формы
   const onSubmit = async (data: RegisterFormData) => {
     try {
       await authStoreRegister(data.email, data.password, data.username)
@@ -71,7 +78,7 @@ export function RegisterForm() {
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
-      <DynamicFormFields 
+      <DynamicFormFields
         fields={fields}
         schema={registerSchema}
         onSubmit={onSubmit}
@@ -90,8 +97,8 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-foreground-secondary mt-6">
         {t('auth.haveAccount')}{' '}
-        <Link 
-          href="/login" 
+        <Link
+          href="/login"
           className="text-primary-foreground hover:underline font-medium"
         >
           {t('auth.login')}

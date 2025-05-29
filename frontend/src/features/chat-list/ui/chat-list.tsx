@@ -65,13 +65,29 @@ export const ChatList = () => {
           <>
             {chats.length > 0 && (
               <div className="p-2">
-                {chats.map(chat => (
-                  <ChatListItem
-                    key={chat.id}
-                    chat={chat}
-                    onSelect={handleChatSelect}
-                  />
-                ))}
+                {chats.map(chat => {
+                  let chatBoxLastMessage = undefined;
+                  if (chat.lastMessage) {
+                    chatBoxLastMessage = {
+                      ...chat.lastMessage,
+                      role: chat.lastMessage.sender || 'USER',
+                      versions: [
+                        {
+                          content: chat.lastMessage.content,
+                          type: chat.lastMessage.type,
+                          createdAt: chat.lastMessage.createdAt,
+                        },
+                      ],
+                    };
+                  }
+                  return (
+                    <ChatListItem
+                      key={chat.id}
+                      chat={{ ...chat, lastMessage: chatBoxLastMessage }}
+                      onSelect={handleChatSelect}
+                    />
+                  );
+                })}
               </div>
             )}
 
@@ -81,14 +97,30 @@ export const ChatList = () => {
                   Archived
                 </div>
                 <div className="p-2">
-                  {archivedChats.map(chat => (
-                    <ChatListItem
-                      key={chat.id}
-                      chat={chat}
-                      onSelect={handleChatSelect}
-                      isArchived
-                    />
-                  ))}
+                  {archivedChats.map(chat => {
+                    let chatBoxLastMessage = undefined;
+                    if (chat.lastMessage) {
+                      chatBoxLastMessage = {
+                        ...chat.lastMessage,
+                        role: chat.lastMessage.sender || 'USER',
+                        versions: [
+                          {
+                            content: chat.lastMessage.content,
+                            type: chat.lastMessage.type,
+                            createdAt: chat.lastMessage.createdAt,
+                          },
+                        ],
+                      };
+                    }
+                    return (
+                      <ChatListItem
+                        key={chat.id}
+                        chat={{ ...chat, lastMessage: chatBoxLastMessage }}
+                        onSelect={handleChatSelect}
+                        isArchived
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -98,5 +130,3 @@ export const ChatList = () => {
     </div>
   );
 };
-
-

@@ -15,6 +15,11 @@ import dynamic from 'next/dynamic'
 
 const Toaster = dynamic(() => import('sonner').then(mod => mod.Toaster), { ssr: false })
 
+/**
+ * LoginForm — форма входа пользователя.
+ * Использует react-hook-form, Zod для валидации, интеграцию с Zustand store.
+ * Показывает ошибки через toast, редиректит после успешного входа.
+ */
 export function LoginForm() {
   const { t } = useTranslation()
   const { mutate: login, isPending } = useLogin()
@@ -28,6 +33,7 @@ export function LoginForm() {
   const fallback = '/chat'
   const [loginSuccess, setLoginSuccess] = useState(false)
 
+  // Описание полей формы
   const fields: FormField[] = [
     {
       name: 'email',
@@ -48,6 +54,7 @@ export function LoginForm() {
     }
   ]
 
+  // Обработка отправки формы
   const onSubmit = async (data: LoginFormData) => {
     try {
       await authStoreLogin(data.email, data.password)
@@ -57,6 +64,7 @@ export function LoginForm() {
     }
   }
 
+  // Редирект после успешного входа
   useEffect(() => {
     if (loginSuccess) {
       toast.success('Successfully logged in!')
@@ -69,7 +77,7 @@ export function LoginForm() {
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
-      <DynamicFormFields 
+      <DynamicFormFields
         fields={fields}
         schema={createLoginSchema(t)}
         onSubmit={onSubmit}
@@ -88,8 +96,8 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-foreground-secondary mt-6">
         {t('auth.noAccount')}{' '}
-        <Link 
-          href="/register" 
+        <Link
+          href="/register"
           className="text-primary-foreground hover:underline font-medium"
         >
           {t('auth.createAccount')}

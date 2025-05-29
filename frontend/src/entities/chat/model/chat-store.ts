@@ -209,17 +209,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   setCurrentChat: (chat) => {
-    set({ currentChat: chat, messages: [] });
+    set({ currentChat: chat });
   },
 
   // Message operations
   fetchMessages: async (chatId, page = 1) => {
     set({ isLoading: true, error: null });
     try {
-      let messages;
+      let messages: Message[];
       if (process.env.NODE_ENV === 'development') {
-        // Используем моковые сообщения для разработки
-        messages = generateMessages(chatId, 20);
+        // Для тестовых чатов всегда генерируем 20 Faker-JS сообщений
+        if (chatId === '1' || chatId === '2') {
+          messages = generateMessages(chatId, 20)
+            .map((msg) => ({
+              id: msg.id,
+              chatId: msg.chatId,
+              content: msg.versions[0]?.content || '',
+              type: msg.versions[0]?.type || MessageType.TEXT,
+              createdAt: msg.versions[0]?.createdAt || new Date().toISOString(),
+              updatedAt: msg.versions[0]?.createdAt || new Date().toISOString(),
+              isEdited: false,
+              sender: msg.role,
+            }))
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        } else {
+          // Для новых чатов — пусто
+          messages = [];
+        }
       } else {
         messages = await chatApi.getMessages({ chatId, page });
       }
@@ -236,6 +252,49 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   sendMessage: async (dto) => {
+    if (process.env.NODE_ENV === 'development') {
+      // Мгновенно добавляем сообщение пользователя
+      const userMessage = {
+        id: String(Date.now()),
+        chatId: dto.chatId,
+        content: dto.content,
+        type: dto.type,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isEdited: false,
+        sender: MessageSender.USER,
+      };
+      set(state => ({
+        messages: [...state.messages, userMessage],
+        chats: state.chats.map(chat =>
+          chat.id === dto.chatId ? { ...chat, lastMessage: userMessage } : chat
+        ),
+        isLoading: false,
+        isAwaitingAssistant: true,
+      }));
+      // Через 1.5 сек — ответ ассистента
+      setTimeout(() => {
+        const assistantMessage = {
+          id: String(Date.now() + 1),
+          chatId: dto.chatId,
+          content: 'Это ответ ассистента (мок).',
+          type: MessageType.TEXT,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isEdited: false,
+          sender: MessageSender.AI,
+        };
+        set(state => ({
+          messages: [...state.messages, assistantMessage],
+          chats: state.chats.map(chat =>
+            chat.id === dto.chatId ? { ...chat, lastMessage: assistantMessage } : chat
+          ),
+          isAwaitingAssistant: false,
+        }));
+      }, 1500);
+      return;
+    }
+    // ... production/real API ...
     set({ isLoading: true, error: null, isAwaitingAssistant: true });
     try {
       const message = await chatApi.createMessage(dto);

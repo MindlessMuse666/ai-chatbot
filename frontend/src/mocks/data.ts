@@ -27,12 +27,13 @@ export function generateMessages(chatId: string, count = 10) {
   const msgs = Array.from({ length: count }, (_, i) => ({
     id: faker.string.uuid(),
     chatId,
-    content: faker.lorem.sentence(),
-    type: MessageType.TEXT,
-    createdAt: faker.date.recent().toISOString(),
-    updatedAt: faker.date.recent().toISOString(),
-    isEdited: false,
-    sender: MessageSender.USER,
+    role: MessageSender.USER,
+    files: [],
+    versions: [{
+      content: faker.lorem.sentence(),
+      type: MessageType.TEXT,
+      createdAt: faker.date.recent().toISOString(),
+    }],
   }));
   console.log('[FAKER] generateMessages:', { chatId, count, msgs });
   return msgs;

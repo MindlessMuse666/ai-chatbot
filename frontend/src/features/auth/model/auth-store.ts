@@ -30,22 +30,32 @@ const MOCK_USER: User = {
   username: 'Dev User'
 };
 
+/**
+ * Zustand store для аутентификации пользователя.
+ * Хранит user, статус авторизации, ошибки и методы login/register/logout/checkAuth.
+ * В dev-режиме использует мок-данные, в production — реальные API-запросы.
+ */
 export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthStore['get']) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
 
+  /**
+   * Авторизация пользователя
+   * @param email — email пользователя
+   * @param password — пароль
+   */
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
       // В dev-режиме используем мок-логин
       if (process.env.NODE_ENV === 'development') {
         console.log('Using mock login in development mode');
-        set({ 
-          user: MOCK_USER, 
-          isAuthenticated: true, 
-          isLoading: false 
+        set({
+          user: MOCK_USER,
+          isAuthenticated: true,
+          isLoading: false
         });
         console.log('isAuthenticated:', get().isAuthenticated);
         return;
@@ -57,24 +67,30 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       set({ user: userData.data, isAuthenticated: true, isLoading: false });
       console.log('isAuthenticated:', get().isAuthenticated);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to login', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to login',
+        isLoading: false
       });
       throw error;
     }
   },
 
+  /**
+   * Регистрация пользователя
+   * @param email — email пользователя
+   * @param password — пароль
+   * @param username — имя пользователя
+   */
   register: async (email: string, password: string, username: string) => {
     set({ isLoading: true, error: null });
     try {
       // В dev-режиме используем мок-регистрацию
       if (process.env.NODE_ENV === 'development') {
         console.log('Using mock registration in development mode');
-        set({ 
-          user: { ...MOCK_USER, email, username }, 
-          isAuthenticated: true, 
-          isLoading: false 
+        set({
+          user: { ...MOCK_USER, email, username },
+          isAuthenticated: true,
+          isLoading: false
         });
         console.log('isAuthenticated:', get().isAuthenticated);
         return;
@@ -87,14 +103,17 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       set({ user: userData.data, isAuthenticated: true, isLoading: false });
       console.log('isAuthenticated:', get().isAuthenticated);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to register', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to register',
+        isLoading: false
       });
       throw error;
     }
   },
 
+  /**
+   * Выход пользователя из системы
+   */
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -111,14 +130,17 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       set({ user: null, isAuthenticated: false, isLoading: false });
       console.log('isAuthenticated:', get().isAuthenticated);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to logout', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to logout',
+        isLoading: false
       });
       throw error;
     }
   },
 
+  /**
+   * Проверка статуса авторизации пользователя
+   */
   checkAuth: async () => {
     const state = get();
     if (state.isLoading) return;
@@ -133,10 +155,10 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
           return;
         }
         // Если пользователя нет, устанавливаем мок-пользователя
-        set({ 
-          user: MOCK_USER, 
-          isAuthenticated: true, 
-          isLoading: false 
+        set({
+          user: MOCK_USER,
+          isAuthenticated: true,
+          isLoading: false
         });
         console.log('isAuthenticated:', get().isAuthenticated);
         return;
@@ -151,4 +173,4 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       console.log('isAuthenticated:', get().isAuthenticated);
     }
   },
-})); 
+}));
