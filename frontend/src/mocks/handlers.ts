@@ -3,34 +3,58 @@
 import { http, HttpResponse } from 'msw';
 import { adminUser, generateChats, generateMessages } from './data';
 
-// Типизация для чатов и сообщений
-interface Chat {
-  id: string;
-  title: string;
-  lastMessage?: any;
-  createdAt: string;
-  updatedAt: string;
-  archived: boolean;
-}
+
 interface Message {
   id: string;
   chatId: string;
-  userId: string;
   content: string;
   createdAt: string;
   updatedAt: string;
   type: string;
   isEdited: boolean;
-  sender?: 'USER' | 'AI';
+  sender: 'USER' | 'AI';
 }
 
+// Новый интерфейс Chat для моков
+interface Chat {
+  id: string;
+  title: string;
+  messages: Message[];
+  lastMessage?: Message;
+  firstMessage?: Message;
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+// Инициализация моков чатов с сообщениями, lastMessage, firstMessage и title по первому сообщению
+const chat1Messages = generateMessages('1', 20);
+const chat2Messages = generateMessages('2', 20);
 let chats: Chat[] = [
-  { id: '1', title: 'Тестовый чат 1', lastMessage: undefined, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), archived: false },
-  { id: '2', title: 'Тестовый чат 2', lastMessage: undefined, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), archived: false }
+  {
+    id: '1',
+    title: chat1Messages[0]?.content || 'Чат 1',
+    messages: chat1Messages,
+    lastMessage: chat1Messages[chat1Messages.length - 1],
+    firstMessage: chat1Messages[0],
+    createdAt: chat1Messages[0]?.createdAt || new Date().toISOString(),
+    updatedAt: chat1Messages[chat1Messages.length - 1]?.updatedAt || new Date().toISOString(),
+    archived: false,
+  },
+  {
+    id: '2',
+    title: chat2Messages[0]?.content || 'Чат 2',
+    messages: chat2Messages,
+    lastMessage: chat2Messages[chat2Messages.length - 1],
+    firstMessage: chat2Messages[0],
+    createdAt: chat2Messages[0]?.createdAt || new Date().toISOString(),
+    updatedAt: chat2Messages[chat2Messages.length - 1]?.updatedAt || new Date().toISOString(),
+    archived: false,
+  }
 ];
 let messages: { [key: string]: Message[] } = {
-  '1': generateMessages('1', 20),
-  '2': generateMessages('2', 20)
+  '1': chat1Messages,
+  '2': chat2Messages
 };
 
 export const handlers = [
@@ -89,29 +113,29 @@ export const handlers = [
     let allMessages = messages[chatId as string] || [];
     // Сортируем по времени (от старых к новым)
     allMessages = allMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    const paged = allMessages.slice(offset, offset + limit).map(msg => ({
-      ...msg,
-      sender: msg.userId === 'assistant' ? 'AI' : 'USER',
-    }));
+    const paged = allMessages.slice(offset, offset + limit);
     return HttpResponse.json({
       total: allMessages.length,
       messages: paged,
     }, { status: 200 });
   }),
 
-  // Создание чата (множественное и единственное число, поддержка title и name)
+  // Создание чата (поддержка title и name)
   http.post('/api/v1.0/chat', async ({ request }) => {
     const body = (await request.json()) as { name?: string; title?: string };
+    const generatedMessages = generateMessages(String(Date.now()), 20);
     const newChat: Chat = {
       id: String(Date.now()),
-      title: body.title || body.name || `Чат ${chats.length + 1}`,
-      lastMessage: undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      title: body.title || body.name || generatedMessages[0]?.content || `Чат ${chats.length + 1}`,
+      messages: generatedMessages,
+      lastMessage: generatedMessages[generatedMessages.length - 1],
+      firstMessage: generatedMessages[0],
+      createdAt: generatedMessages[0]?.createdAt || new Date().toISOString(),
+      updatedAt: generatedMessages[generatedMessages.length - 1]?.updatedAt || new Date().toISOString(),
       archived: false,
     };
     chats.unshift(newChat);
-    messages[newChat.id] = generateMessages(newChat.id, 20);
+    messages[newChat.id] = generatedMessages;
     console.log('[MSW] Chat created:', newChat);
     return HttpResponse.json(newChat, { status: 201 });
   }),
@@ -175,7 +199,6 @@ export const handlers = [
     const newMessage: Message = {
       id: String(Date.now()),
       chatId: chatId as string,
-      userId: adminUser.id,
       content: content,
       type: type || 'TEXT',
       createdAt: new Date().toISOString(),
@@ -199,7 +222,6 @@ export const handlers = [
       const assistantMessage: Message = {
         id: String(Date.now() + 1),
         chatId: chatId as string,
-        userId: 'assistant',
         content: 'Это ответ ассистента (мок).',
         type: 'TEXT',
         createdAt: new Date().toISOString(),

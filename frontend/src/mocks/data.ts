@@ -24,10 +24,9 @@ export function generateChats(count = 5) {
 }
 
 export function generateMessages(chatId: string, count = 10) {
-  return Array.from({ length: count }, (_, i) => ({
+  const msgs = Array.from({ length: count }, (_, i) => ({
     id: faker.string.uuid(),
     chatId,
-    userId: '1',
     content: faker.lorem.sentence(),
     type: MessageType.TEXT,
     createdAt: faker.date.recent().toISOString(),
@@ -35,4 +34,6 @@ export function generateMessages(chatId: string, count = 10) {
     isEdited: false,
     sender: MessageSender.USER,
   }));
+  console.log('[FAKER] generateMessages:', { chatId, count, msgs });
+  return msgs;
 }
