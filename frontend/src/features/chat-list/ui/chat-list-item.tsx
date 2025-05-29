@@ -4,10 +4,11 @@ import { MoreVertical, Archive, Trash } from 'lucide-react';
 import { Button } from '@heroui/react';
 import { toast } from 'sonner';
 import type { Chat } from '@/entities/chat/model/types';
+import type { Message } from '@/features/chat-box/model/message';
 import { useChatStore } from '@/entities/chat/model/chat-store';
 
 interface ChatListItemProps {
-  chat: Chat;
+  chat: Chat & { lastMessage?: Message };
   onSelect: (chatId: string) => void;
   isArchived?: boolean;
 }
@@ -77,10 +78,10 @@ export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) 
         {chat.lastMessage && (
           <div className="flex items-center gap-2 mt-1">
             <p className="text-xs text-gray-500 truncate">
-              {chat.lastMessage.content}
+              {chat.lastMessage.versions?.[0]?.content}
             </p>
             <span className="text-xs text-gray-400">
-              {format(new Date(chat.lastMessage.createdAt), 'HH:mm')}
+              {chat.lastMessage.versions?.[0]?.createdAt ? format(new Date(chat.lastMessage.versions[0].createdAt), 'HH:mm') : ''}
             </span>
           </div>
         )}

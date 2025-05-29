@@ -31,19 +31,19 @@ export const MessageList = ({ messages }: MessageListProps) => {
   return (
     <div className="space-y-4">
       {messages.map((message) => {
-        const sender = (message as any).userId === 'assistant' ? (MessageSender as any).ASSISTANT : (MessageSender as any).USER;
+        const sender = message.sender;
         return (
           <div
             key={message.id}
             className={`
               flex gap-3 max-w-[80%]
-              ${sender === (MessageSender as any).USER ? 'ml-auto' : 'mr-auto'}
+              ${sender === MessageSender.USER ? 'ml-auto' : 'mr-auto'}
             `}
           >
             <div
               className={`
                 rounded-lg p-3
-                ${sender === (MessageSender as any).USER 
+                ${sender === MessageSender.USER 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
                 }
@@ -53,7 +53,7 @@ export const MessageList = ({ messages }: MessageListProps) => {
                 <p className="text-sm whitespace-pre-wrap break-words">
                   {message.content}
                 </p>
-                {sender === (MessageSender as any).USER && (
+                {sender === MessageSender.USER && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                     <Button
                       variant="ghost"

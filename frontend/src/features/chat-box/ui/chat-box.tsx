@@ -6,7 +6,8 @@ import { useChatStore } from '@/entities/chat/model/chat-store';
 import { MessageList } from './message-list';
 import { MessageInput } from './message-input';
 import { MessageSender, MessageType } from '@/entities/chat/model/types';
-import { useWebSocket } from '@/shared/hooks/use-websocket';
+import { getSocket } from '@/shared/api/socket-service';
+import { useSocketIO } from '@/shared/hooks/use-socket';
 
 interface ChatBoxProps {
   chatId: string;
@@ -26,7 +27,10 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
   } = useChatStore();
 
   // Подписываемся на событие 'message' через Socket.IO
-  const { sendMessage: sendSocketMessage } = useWebSocket('message', handleWebSocketMessage);
+  useSocketIO('message', (msg) => {
+    handleWebSocketMessage(msg);
+    fetchMessages(chatId);
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,25 +53,19 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
-  
     try {
       const messageDto = {
         chatId,
         content: content.trim(),
         type: MessageType.TEXT,
-      };
-  
-      // Отправляем сообщение через Socket.IO
-      sendSocketMessage('sendMessage', {
-        ...messageDto,
         sender: MessageSender.USER,
-      });
-
-      // Также сохраняем в базе данных через REST API
-      await sendMessage(messageDto);
-
-      // ДОБАВИТЬ: обновить список сообщений после отправки
-      await fetchMessages(chatId);
+      };
+      // Отправляем сообщение через Socket.IO напрямую
+      getSocket().emit('sendMessage', messageDto);
+      // Через 1.6 сек рефетчим сообщения, чтобы получить ответ ассистента из моков
+      setTimeout(() => {
+        fetchMessages(chatId);
+      }, 1600);
     } catch (error) {
       toast.error('Failed to send message');
     }
