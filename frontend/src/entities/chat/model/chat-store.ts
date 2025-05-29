@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { chatApi } from '../api/chat-api';
 import type { Chat, Message, CreateChatDto, UpdateChatDto, CreateMessageDto, UpdateMessageDto } from './types';
-
+import { generateMessages } from '@/mocks/data';
+import { MessageSender, MessageType } from './types';
 interface ChatState {
   chats: Chat[];
   archivedChats: Chat[];
@@ -213,7 +214,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchMessages: async (chatId, page = 1) => {
     set({ isLoading: true, error: null });
     try {
-      const messages = await chatApi.getMessages({ chatId, page });
+      let messages;
+      if (process.env.NODE_ENV === 'development') {
+        // Используем моковые сообщения для разработки
+        messages = generateMessages(chatId, 20);
+      } else {
+        messages = await chatApi.getMessages({ chatId, page });
+      }
       set(state => ({
         messages: page === 1 ? messages : [...state.messages, ...messages],
         isLoading: false
@@ -294,6 +301,31 @@ export const useChatStore = create<ChatState>((set, get) => ({
               : chat
           ),
         }));
+        
+        // Имитируем ответ ассистента через 1.5 секунды
+        if (newMessage.sender === MessageSender.USER) {
+          setTimeout(() => {
+            const assistantMessage: Message = {
+              id: String(Date.now()),
+              chatId: newMessage.chatId,
+              content: 'Это автоматический ответ ассистента',
+              type: MessageType.TEXT,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              isEdited: false,
+              sender: MessageSender.AI,
+            };
+            
+            set(state => ({
+              messages: [...state.messages, assistantMessage],
+              chats: state.chats.map(chat => 
+                chat.id === assistantMessage.chatId 
+                  ? { ...chat, lastMessage: assistantMessage }
+                  : chat
+              ),
+            }));
+          }, 1500);
+        }
         break;
 
       case 'chat_update':

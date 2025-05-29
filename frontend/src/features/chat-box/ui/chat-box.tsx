@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useChatStore } from '@/entities/chat/model/chat-store';
 import { MessageList } from './message-list';
 import { MessageInput } from './message-input';
-import { MessageType } from '@/entities/chat/model/types';
+import { MessageSender, MessageType } from '@/entities/chat/model/types';
 import { useWebSocket } from '@/shared/hooks/use-websocket';
 
 interface ChatBoxProps {
@@ -22,6 +22,7 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
     sendMessage,
     setCurrentChat,
     handleWebSocketMessage,
+    chats,
   } = useChatStore();
 
   // Подписываемся на событие 'message' через Socket.IO
@@ -31,8 +32,9 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
   useEffect(() => {
     if (chatId) {
       fetchMessages(chatId).catch(console.error);
+      setCurrentChat(chats.find(chat => chat.id === chatId) || null);
     }
-  }, [chatId, fetchMessages]);
+  }, [chatId, fetchMessages, setCurrentChat, chats]);
 
   useEffect(() => {
     if (error) {
@@ -47,16 +49,19 @@ export const ChatBox = ({ chatId }: ChatBoxProps) => {
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
-
+  
     try {
       const messageDto = {
         chatId,
         content: content.trim(),
         type: MessageType.TEXT,
       };
-
+  
       // Отправляем сообщение через Socket.IO
-      sendSocketMessage('sendMessage', messageDto);
+      sendSocketMessage('sendMessage', {
+        ...messageDto,
+        sender: MessageSender.USER,
+      });
 
       // Также сохраняем в базе данных через REST API
       await sendMessage(messageDto);

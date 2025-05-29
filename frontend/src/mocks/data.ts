@@ -1,6 +1,8 @@
 /* Генерация моковых (фейковых) данных */
 
+import { MessageSender } from '@/entities/chat/model/types';
 import { faker } from '@faker-js/faker';
+import { MessageType } from '@/entities/chat/model/types';
 
 export const adminUser = {
   id: '1',
@@ -27,9 +29,10 @@ export function generateMessages(chatId: string, count = 10) {
     chatId,
     userId: '1',
     content: faker.lorem.sentence(),
-    type: 'TEXT',
+    type: MessageType.TEXT,
     createdAt: faker.date.recent().toISOString(),
     updatedAt: faker.date.recent().toISOString(),
-    isEdited: false
+    isEdited: false,
+    sender: MessageSender.USER,
   }));
 }
