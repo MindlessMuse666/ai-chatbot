@@ -79,6 +79,10 @@ _(В будущем будет доступна онлайн-демо-верси
 
 ## 👥 Авторы
 
+FrierenWay
+- [GitHub](https://github.com/FrierenWay "Александра: github.com/FrierenWay")
+- [Telegram](t.me/NebbiaQ "@NebbiaQ")
+
 RoudgerLRG
 - [GitHub](github.com/RoudgerGot "Анастасия: github.com/RoudgerGot")
 - [Telegram](t.me/Fukkazzumi "@Fukkazzumi")
