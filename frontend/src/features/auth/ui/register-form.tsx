@@ -78,6 +78,9 @@ export function RegisterForm() {
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
+      <div className="flex justify-center mb-6">
+        <img src="/logo-dark.svg" alt="Logo" className="h-11 w-auto" />
+      </div>
       <DynamicFormFields
         fields={fields}
         schema={registerSchema}
