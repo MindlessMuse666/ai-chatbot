@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { MoreVertical, Archive, Trash } from 'lucide-react';
 import { Button } from '@heroui/react';
@@ -11,6 +11,16 @@ interface ChatListItemProps {
   chat: Chat & { lastMessage?: Message };
   onSelect: (chatId: string) => void;
   isArchived?: boolean;
+}
+
+function TimeClient({ date }: { date?: string | Date }) {
+  const [time, setTime] = useState('');
+  useEffect(() => {
+    if (date) {
+      setTime(format(new Date(date), 'HH:mm'));
+    }
+  }, [date]);
+  return <span className="text-xs text-gray-400">{time}</span>;
 }
 
 export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) => {
@@ -80,15 +90,11 @@ export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) 
             <p className="text-xs text-gray-500 truncate">
               {chat.lastMessage.versions[0].content}
             </p>
-            <span className="text-xs text-gray-400">
-              {chat.lastMessage.versions[0].createdAt ? format(new Date(chat.lastMessage.versions[0].createdAt), 'HH:mm') : ''}
-            </span>
+            <TimeClient date={chat.lastMessage.versions[0].createdAt} />
           </div>
         ) : (
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-400">
-              {chat.createdAt ? format(new Date(chat.createdAt), 'HH:mm') : ''}
-            </span>
+            <TimeClient date={chat.createdAt} />
           </div>
         )}
       </div>

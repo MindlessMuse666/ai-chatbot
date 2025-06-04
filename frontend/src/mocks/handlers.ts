@@ -50,7 +50,12 @@ let messages: { [key: string]: any[] } = {
 };
 
 export const handlers = [
-  // Аутентификация
+  // // Мок для аутентификации (с query-параметрами)
+  // http.get('/api/v1.0/auth/\\/login.*/', () => {
+  //   return HttpResponse.text('', { status: 200 });
+  // }),
+
+  // Мок для аутентификации
   http.post('/api/v1.0/auth/login', async ({ request }) => {
     const { email, password } = (await request.json()) as { email?: string; password?: string };
     if (email === adminUser.email && password === adminUser.password) {
@@ -64,7 +69,7 @@ export const handlers = [
     return HttpResponse.json({ token: 'mock-token' }, { status: 200 });
   }),
 
-  // Регистрация
+  // Мок для регистрации
   http.post('/api/v1.0/auth/signup', async ({ request }) => {
     const { email, password, name } = (await request.json()) as { email?: string; password?: string; name?: string };
     if (!email || !password) {
@@ -85,12 +90,12 @@ export const handlers = [
   }),
 
   // Профиль пользователя
-  http.get('/api/v1.0/user/profile', () => {
+  http.get('/api/v1.0/user/profile', async ({ request }) => {
     return HttpResponse.json(adminUser, { status: 200 });
   }),
 
   // Получение чатов
-  http.get('/api/v1.0/chat', () => {
+  http.get('/api/v1.0/chat', async ({ request }) => {
     return HttpResponse.json(chats, { status: 200 });
   }),
 
@@ -242,10 +247,7 @@ export const handlers = [
   }),
 
   // Архивированные чаты
-  http.get('/api/v1.0/chat/archived', () => {
-    return HttpResponse.json([], { status: 200 });
-  }),
-  http.get('/api/v1.0/chat/archived', () => {
+  http.get('/api/v1.0/chat/archived', async ({ request }) => {
     return HttpResponse.json(chats.filter(c => c.archived), { status: 200 });
   }),
 

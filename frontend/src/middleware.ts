@@ -22,6 +22,7 @@ export function middleware(request: NextRequest) {
   if (!token && !isPublicPath) {
     const url = new URL('/login', request.url)
     url.searchParams.set('from', pathname)
+    url.searchParams.set('reason', 'auth')
     return NextResponse.redirect(url)
   }
 

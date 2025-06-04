@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { apiClient } from '@/shared/api/api-client';
+import { getSocket, updateSocketAuth } from '@/shared/api/socket-service';
 
 interface User {
   id: string;
@@ -9,6 +10,7 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -16,6 +18,7 @@ interface AuthState {
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 type AuthStore = {
@@ -37,6 +40,7 @@ const MOCK_USER: User = {
  */
 export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthStore['get']) => ({
   user: null,
+  accessToken: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -49,23 +53,20 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме используем мок-логин
       if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock login in development mode');
         set({
           user: MOCK_USER,
+          accessToken: 'mock-token',
           isAuthenticated: true,
           isLoading: false
         });
-        console.log('isAuthenticated:', get().isAuthenticated);
+        updateSocketAuth('mock-token');
         return;
       }
-
-      // Реальный логин для production
       const response = await apiClient.post('/auth/login', { email, password });
-      const userData = await apiClient.get('/user/profile');
-      set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      const { token, user } = response.data;
+      set({ user, accessToken: token, isAuthenticated: true, isLoading: false });
+      updateSocketAuth(token);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to login',
@@ -84,24 +85,21 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
   register: async (email: string, password: string, username: string) => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме используем мок-регистрацию
       if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock registration in development mode');
         set({
           user: { ...MOCK_USER, email, username },
+          accessToken: 'mock-token',
           isAuthenticated: true,
           isLoading: false
         });
-        console.log('isAuthenticated:', get().isAuthenticated);
+        updateSocketAuth('mock-token');
         return;
       }
-
-      // Реальная регистрация для production
       await apiClient.post('/auth/signup', { email, password, username });
       const response = await apiClient.post('/auth/login', { email, password });
-      const userData = await apiClient.get('/user/profile');
-      set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      const { token, user } = response.data;
+      set({ user, accessToken: token, isAuthenticated: true, isLoading: false });
+      updateSocketAuth(token);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to register',
@@ -117,18 +115,14 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме просто очищаем состояние
       if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock logout in development mode');
-        set({ user: null, isAuthenticated: false, isLoading: false });
-        console.log('isAuthenticated:', get().isAuthenticated);
+        set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
+        updateSocketAuth(null);
         return;
       }
-
-      // Реальный логаут для production
       await apiClient.post('/auth/logout');
-      set({ user: null, isAuthenticated: false, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
+      updateSocketAuth(null);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to logout',
@@ -151,7 +145,6 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       if (process.env.NODE_ENV === 'development') {
         if (state.user) {
           set({ isLoading: false });
-          console.log('isAuthenticated:', get().isAuthenticated);
           return;
         }
         // Если пользователя нет, устанавливаем мок-пользователя
@@ -160,17 +153,36 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
           isAuthenticated: true,
           isLoading: false
         });
-        console.log('isAuthenticated:', get().isAuthenticated);
         return;
       }
 
       // Реальная проверка для production
       const userData = await apiClient.get('/user/profile');
+      console.log('userData', userData)
       set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
     } catch (error) {
       set({ user: null, isAuthenticated: false, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+    }
+  },
+
+  refresh: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        set({ accessToken: 'mock-token', isAuthenticated: true, isLoading: false });
+        updateSocketAuth('mock-token');
+        return;
+      }
+      const response = await apiClient.post('/auth/refresh');
+      const { token } = response.data;
+      set({ accessToken: token, isAuthenticated: true, isLoading: false });
+      updateSocketAuth(token);
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to refresh',
+        isLoading: false
+      });
+      throw error;
     }
   },
 }));
