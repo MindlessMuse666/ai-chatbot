@@ -97,6 +97,7 @@ export function LoginForm() {
         </div>
       </DynamicFormFields>
 
+      {/* Ссылка на регистрацию */}
       <p className="text-center text-sm text-foreground-secondary mt-6">
         {t('auth.noAccount')}{' '}
         <Link
@@ -106,6 +107,16 @@ export function LoginForm() {
           {t('auth.createAccount')}
         </Link>
       </p>
+
+      {/* Ссылка на сброс пароля */}
+      <div className="text-center text-sm text-foreground-secondary mt-6">
+        <Link 
+          href="/forgot-password"
+          className="text-primary-foreground hover:underline font-medium"
+        >
+          {t('auth.forgotPassword')}
+        </Link>
+      </div>
     </div>
   )
 }

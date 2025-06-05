@@ -16,6 +16,7 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -182,6 +183,15 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
         error: error instanceof Error ? error.message : 'Failed to refresh',
         isLoading: false
       });
+      throw error;
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/reset-password', { email });
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },
