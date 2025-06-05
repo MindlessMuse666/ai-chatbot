@@ -16,6 +16,7 @@ interface AuthState {
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 type AuthStore = {
@@ -171,6 +172,15 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
     } catch (error) {
       set({ user: null, isAuthenticated: false, isLoading: false });
       console.log('isAuthenticated:', get().isAuthenticated);
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/reset-password', { email });
+      return response.data;
+    } catch (error) {
+      throw error;
     }
   },
 }));
