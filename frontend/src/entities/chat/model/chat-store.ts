@@ -3,6 +3,8 @@ import { chatApi } from '../api/chat-api';
 import type { Chat, Message, CreateChatDto, UpdateChatDto, CreateMessageDto, UpdateMessageDto } from './types';
 import { generateMessages } from '@/mocks/data';
 import { MessageSender, MessageType } from './types';
+import { useAuthStore } from '@/features/auth/model/auth-store';
+
 interface ChatState {
   chats: Chat[];
   archivedChats: Chat[];
@@ -83,10 +85,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       set({ chats, isLoading: false });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch chats',
-        isLoading: false
-      });
+      if (useAuthStore.getState().isAuthenticated) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch chats',
+          isLoading: false
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 
@@ -96,10 +102,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const archivedChats = await chatApi.getArchivedChats();
       set({ archivedChats, isLoading: false });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch archived chats',
-        isLoading: false
-      });
+      if (useAuthStore.getState().isAuthenticated) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch archived chats',
+          isLoading: false
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 

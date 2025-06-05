@@ -1,8 +1,7 @@
-'use client'
+"use client";
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@heroui/react';
 import { toast } from 'sonner';
 import { useChatStore } from '@/entities/chat/model/chat-store';
 import { ChatListItem } from './chat-list-item';

@@ -5,4 +5,4 @@ import { handlers } from './handlers';
 
 export const worker = setupWorker(...handlers);
 
-console.log('[MSW] Worker instance created');
+// console.log('[MSW] Worker instance created');

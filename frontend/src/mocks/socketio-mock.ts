@@ -4,7 +4,47 @@
 import { getSocket } from '../shared/api/socket-service';
 import { generateMessages } from './data';
 
+// Мок для socket.io-client
+
+// Простейшая реализация фейкового сокета
+class FakeSocket {
+  connected = false;
+  auth: any = {};
+  private handlers: Record<string, Function[]> = {};
+
+  on(event: string, handler: (...args: any[]) => void) {
+    if (!this.handlers[event]) this.handlers[event] = [];
+    this.handlers[event].push(handler);
+  }
+  off(event: string, handler: (...args: any[]) => void) {
+    if (!this.handlers[event]) return;
+    this.handlers[event] = this.handlers[event].filter(h => h !== handler);
+  }
+  emit(event: string, ...args: any[]) {
+    if (this.handlers[event]) {
+      this.handlers[event].forEach(h => h(...args));
+    }
+  }
+  connect() {
+    this.connected = true;
+    // Можно эмулировать событие 'connect'
+    this.emit('connect');
+  }
+  disconnect() {
+    this.connected = false;
+    this.emit('disconnect');
+  }
+}
+
 export function setupSocketIOMock() {
+  // Подменяем io глобально, если используется через window
+  if (typeof window !== 'undefined') {
+    // @ts-ignore
+    window.io = () => new FakeSocket();
+  }
+  // Для импортов из 'socket.io-client' (работает только если используется esm-mock-loader или аналогичный подход)
+  // В большинстве CRA/Vite/Next проектов это не сработает без дополнительной настройки, но window.io перекроет большинство кейсов.
+
   const socket = getSocket();
 
   // Пример: при подключении отправляем тестовые сообщения

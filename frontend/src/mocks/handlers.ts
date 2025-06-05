@@ -50,7 +50,7 @@ let messages: { [key: string]: any[] } = {
 };
 
 export const handlers = [
-  // Аутентификация
+  // Мок для аутентификации
   http.post('/api/v1.0/auth/login', async ({ request }) => {
     const { email, password } = (await request.json()) as { email?: string; password?: string };
     if (email === adminUser.email && password === adminUser.password) {
@@ -64,7 +64,7 @@ export const handlers = [
     return HttpResponse.json({ token: 'mock-token' }, { status: 200 });
   }),
 
-  // Регистрация
+  // Мок для регистрации
   http.post('/api/v1.0/auth/signup', async ({ request }) => {
     const { email, password, name } = (await request.json()) as { email?: string; password?: string; name?: string };
     if (!email || !password) {
@@ -85,13 +85,21 @@ export const handlers = [
   }),
 
   // Профиль пользователя
-  http.get('/api/v1.0/user/profile', () => {
+  http.get('/api/v1.0/user/profile', async ({ request }) => {
+    return HttpResponse.json(adminUser, { status: 200 });
+  }),
+
+  // Обновление профиля пользователя
+  http.post('/api/v1.0/user/profile', async ({ request }) => {
+    const { name, avatar } = (await request.json()) as { name?: string; avatar?: string };
+    adminUser.name = name || adminUser.name;
+    adminUser.avatar = avatar || adminUser.avatar;
     return HttpResponse.json(adminUser, { status: 200 });
   }),
 
   // Получение чатов
-  http.get('/api/v1.0/chat', () => {
-    return HttpResponse.json(chats, { status: 200 });
+  http.get('/api/v1.0/chat', async ({ request }) => {
+    return HttpResponse.json(chats.filter(c => !c.archived), { status: 200 });
   }),
 
   // Получение сообщений с поддержкой offset/limit и page/limit
@@ -128,7 +136,6 @@ export const handlers = [
       archived: false,
     };
     chats.push(newChat);
-    console.log('[MSW] Chat created:', newChat);
     return HttpResponse.json(newChat, { status: 201 });
   }),
 
@@ -164,7 +171,7 @@ export const handlers = [
     return HttpResponse.json({ success: true }, { status: 200 });
   }),
 
-  // Архивация/разархивация чата
+  // Архивирование чата
   http.put('/api/v1.0/chat/:id/archive', ({ params }) => {
     const { id } = params;
     const chat = chats.find(c => c.id === id);
@@ -174,6 +181,8 @@ export const handlers = [
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
   }),
+  
+  // Анархивирование чата
   http.put('/api/v1.0/chat/:id/unarchive', ({ params }) => {
     const { id } = params;
     const chat = chats.find(c => c.id === id);
@@ -182,6 +191,16 @@ export const handlers = [
       return HttpResponse.json(chat, { status: 200 });
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
+  }),
+
+  // Получение всех чатов (неархивированных)
+  http.get('/api/v1.0/chat', async ({ request }) => {
+    return HttpResponse.json(chats.filter(c => !c.archived), { status: 200 });
+  }),
+
+  // Получение архивированных чатов
+  http.get('/api/v1.0/chat/archived', async ({ request }) => {
+    return HttpResponse.json(chats.filter(c => c.archived), { status: 200 });
   }),
 
   // Отправка сообщения (реалистично: сохраняем, обновляем lastMessage, эмулируем ассистента)
@@ -208,7 +227,6 @@ export const handlers = [
     if (chat) {
       chat.lastMessage = newMessage;
     }
-    console.log('[MSW] Message created:', newMessage);
     // Эмулируем "ответ ассистента" через 1.5 секунды (можно усложнить)
     setTimeout(() => {
       // Найти дату последнего сообщения
@@ -236,17 +254,8 @@ export const handlers = [
       if (chat) {
         chat.lastMessage = assistantMessage;
       }
-      console.log('[MSW] Assistant message created:', assistantMessage);
     }, 1500);
     return HttpResponse.json(newMessage, { status: 201 });
-  }),
-
-  // Архивированные чаты
-  http.get('/api/v1.0/chat/archived', () => {
-    return HttpResponse.json([], { status: 200 });
-  }),
-  http.get('/api/v1.0/chat/archived', () => {
-    return HttpResponse.json(chats.filter(c => c.archived), { status: 200 });
   }),
 
   // TODO: добавить другие эндпоинты по необходимости

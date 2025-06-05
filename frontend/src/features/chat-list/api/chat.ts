@@ -21,6 +21,14 @@ const chatApi = {
   deleteChat: async (data: { id: string }): Promise<void> => {
     const response = await api.delete(`/chat/${data.id}`)
     return response.data
+  },
+  archiveChat: async (id: string): Promise<Chat> => {
+    const response = await api.put(`/chat/${id}/archive`)
+    return response.data
+  },
+  unarchiveChat: async (id: string): Promise<Chat> => {
+    const response = await api.put(`/chat/${id}/unarchive`)
+    return response.data
   }
 }
 
@@ -79,6 +87,32 @@ export const useChatApi = {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['chat'] })
         toast.success(t('chat.toast.deleted'))
+      },
+      onError: () => {
+        toast.error(t('chat.toast.error'))
+      }
+    })
+  },
+  useArchiveChat: () => {
+    const { t } = useTranslation()
+    return useMutation({
+      mutationFn: (chatId: string) => chatApi.archiveChat(chatId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['chat'] })
+        toast.success(t('chat.toast.archived'))
+      },
+      onError: () => {
+        toast.error(t('chat.toast.error'))
+      }
+    })
+  },
+  useUnarchiveChat: () => {
+    const { t } = useTranslation()
+    return useMutation({
+      mutationFn: (chatId: string) => chatApi.unarchiveChat(chatId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['chat'] })
+        toast.success(t('chat.toast.unarchived'))
       },
       onError: () => {
         toast.error(t('chat.toast.error'))

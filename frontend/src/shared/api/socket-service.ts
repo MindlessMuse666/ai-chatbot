@@ -17,7 +17,6 @@ export function getSocket(): Socket {
   return socket;
 }
 
-// Пример хука для React (можно использовать в Zustand/React Query)
 import { useEffect } from 'react';
 
 export function useSocket(event: string, handler: (...args: any[]) => void) {
@@ -28,4 +27,14 @@ export function useSocket(event: string, handler: (...args: any[]) => void) {
       s.off(event, handler);
     };
   }, [event, handler]);
+}
+
+export function updateSocketAuth(token: string | null) {
+  const s = getSocket();
+  s.auth = { token };
+  if (token) {
+    if (!s.connected) s.connect();
+  } else {
+    if (s.connected) s.disconnect();
+  }
 }

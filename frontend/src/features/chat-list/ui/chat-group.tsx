@@ -1,3 +1,5 @@
+/* НЕ ИСПОЛЬЗУЕТСЯ */
+
 'use client'
 
 import { Chat } from "../model/chat"

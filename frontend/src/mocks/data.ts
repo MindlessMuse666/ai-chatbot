@@ -1,4 +1,4 @@
-/* Генерация моковых (фейковых) данных */
+/* Генерация моковых данных */
 
 import { MessageSender } from '@/entities/chat/model/types';
 import { faker } from '@faker-js/faker';
