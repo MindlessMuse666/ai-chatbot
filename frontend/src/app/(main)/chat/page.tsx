@@ -7,8 +7,6 @@ import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 const ChatPage = () => {
   useAuthGuard()
   const { chats } = useChatStore()
-  console.log('MOCK CHATS:', useChatStore.getState().chats)
-  // console.log('ChatPage rendered', chats)
   return (
     <div>
       <h2>Ваши чаты</h2>

@@ -1,61 +1,120 @@
 /* Моки для MSW */
 
 import { http, HttpResponse } from 'msw';
-import { adminUser, generateChats, generateMessages } from './data';
+import { generateMessages } from './data';
 import { MessageSender, MessageType } from '@/entities/chat/model/types';
+import type { Chat, Message } from '@/entities/chat/model/types';
+import type { User } from '@/entities/user/model/user';
+import { UserStatus } from '@/entities/user/model/user';
+import { Role } from '@/entities/role/model/role';
 
-// Переопределяем функцию generateMessages для MSW-совместимого формата
-function toUiMessage(msg: any) {
+// Преобразование моковых сообщений в Message
+function toMessage(msg: any): Message {
   return {
     id: msg.id,
     chatId: msg.chatId,
-    role: msg.sender,
-    files: [],
-    versions: [{
-      content: msg.content,
-      type: msg.type,
-      createdAt: msg.createdAt,
-    }],
+    content: msg.versions?.[0]?.content || '',
+    type: msg.versions?.[0]?.type || MessageType.TEXT,
+    createdAt: msg.versions?.[0]?.createdAt || new Date().toISOString(),
+    updatedAt: msg.versions?.[0]?.createdAt || new Date().toISOString(),
+    isEdited: false,
+    sender: msg.role,
   };
 }
 
 // Инициализация моков чатов с сообщениями, lastMessage, firstMessage и title по первому сообщению
-const chat1Messages = generateMessages('1', 20);
-const chat2Messages = generateMessages('2', 20);
-let chats = [
+const chat1Messages = generateMessages('1', 20).map(toMessage);
+const chat2Messages = generateMessages('2', 20).map(toMessage);
+let chats: Chat[] = [
   {
     id: '1',
-    title: chat1Messages[0]?.versions[0]?.content || 'Чат 1',
-    messages: chat1Messages,
+    title: chat1Messages[0]?.content || 'Чат 1',
     lastMessage: chat1Messages[chat1Messages.length - 1],
-    firstMessage: chat1Messages[0],
-    createdAt: chat1Messages[0]?.versions[0]?.createdAt || new Date().toISOString(),
-    updatedAt: chat1Messages[chat1Messages.length - 1]?.versions[0]?.createdAt || new Date().toISOString(),
-    archived: false,
+    createdAt: chat1Messages[0]?.createdAt || new Date().toISOString(),
+    updatedAt: chat1Messages[chat1Messages.length - 1]?.createdAt || new Date().toISOString(),
+    isArchived: false,
   },
   {
     id: '2',
-    title: chat2Messages[0]?.versions[0]?.content || 'Чат 2',
-    messages: chat2Messages,
+    title: chat2Messages[0]?.content || 'Чат 2',
     lastMessage: chat2Messages[chat2Messages.length - 1],
-    firstMessage: chat2Messages[0],
-    createdAt: chat2Messages[0]?.versions[0]?.createdAt || new Date().toISOString(),
-    updatedAt: chat2Messages[chat2Messages.length - 1]?.versions[0]?.createdAt || new Date().toISOString(),
-    archived: false,
+    createdAt: chat2Messages[0]?.createdAt || new Date().toISOString(),
+    updatedAt: chat2Messages[chat2Messages.length - 1]?.createdAt || new Date().toISOString(),
+    isArchived: false,
   }
 ];
-let messages: { [key: string]: any[] } = {
+let messages: { [key: string]: Message[] } = {
   '1': chat1Messages,
   '2': chat2Messages
 };
+
+// Пример adminUser с полной типизацией
+export const adminUser: User & { password: string } = {
+  id: '1',
+  email: 'dev@graviton.ru',
+  name: 'Админ',
+  status: UserStatus.ACTIVE,
+  role: Role.ADMIN,
+  userPermissions: [],
+  createdAt: new Date(),
+  password: 'zmvqfFNe',
+};
+
+// Массив пользователей для моков с поддержкой localStorage
+let users: (User & { password: string })[] = [];
+try {
+  const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('msw-users') : null;
+  users = saved ? JSON.parse(saved) : [adminUser];
+  if (!saved && typeof localStorage !== 'undefined') {
+    localStorage.setItem('msw-users', JSON.stringify(users));
+  }
+  console.log('[MSW] Loaded users:', users)
+} catch {
+  users = [adminUser];
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('msw-users', JSON.stringify(users));
+  }
+  console.log('[MSW] Loaded users fallback:', users)
+}
+function saveUsers() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('msw-users', JSON.stringify(users));
+      console.log('[MSW] Saved users:', users)
+    }
+  } catch {}
+}
+
+// Сохраняем lastLoggedInUserId в localStorage для кросс-табовой синхронизации
+function setLastLoggedInUserId(id: string | null) {
+  if (typeof localStorage !== 'undefined') {
+    if (id) localStorage.setItem('msw-last-user', id);
+    else localStorage.removeItem('msw-last-user');
+  }
+  lastLoggedInUserId = id;
+}
+function getLastLoggedInUserId(): string | null {
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('msw-last-user') || null;
+  }
+  return lastLoggedInUserId;
+}
+let lastLoggedInUserId: string | null = getLastLoggedInUserId();
 
 export const handlers = [
   // Мок для аутентификации
   http.post('/api/v1.0/auth/login', async ({ request }) => {
     const { email, password } = (await request.json()) as { email?: string; password?: string };
-    if (email === adminUser.email && password === adminUser.password) {
-      return HttpResponse.json({ token: 'mock-token', user: adminUser }, { status: 200 });
+    console.log('[MSW] Login attempt:', { email, password });
+    console.log('[MSW] Users before login:', users)
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      setLastLoggedInUserId(user.id);
+      const { password: _, ...safeUser } = user;
+      console.log('[MSW] Login success:', safeUser);
+      return HttpResponse.json({ token: 'mock-token', user: safeUser }, { status: 200 });
     }
+    console.log('[MSW] Login failed: Invalid credentials');
     return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 });
   }),
 
@@ -67,39 +126,64 @@ export const handlers = [
   // Мок для регистрации
   http.post('/api/v1.0/auth/signup', async ({ request }) => {
     const { email, password, name } = (await request.json()) as { email?: string; password?: string; name?: string };
+    console.log('[MSW] Signup attempt:', { email, password, name });
+    console.log('[MSW] Users before signup:', users)
     if (!email || !password) {
       return HttpResponse.json({ message: 'Email and password required' }, { status: 400 });
     }
-    if (email === adminUser.email) {
+    if (users.some(u => u.email === email)) {
       return HttpResponse.json({ message: 'User already exists' }, { status: 409 });
     }
-    const newUser = {
+    const newUser: User & { password: string } = {
       id: String(Date.now()),
       email,
-      password,
-      role: 'USER',
       name: name || 'Пользователь',
-      avatar: '',
+      status: UserStatus.ACTIVE,
+      role: Role.USER,
+      userPermissions: [],
+      createdAt: new Date(),
+      password,
     };
-    return HttpResponse.json({ token: 'mock-token', user: newUser }, { status: 201 });
+    users.push(newUser);
+    saveUsers();
+    setLastLoggedInUserId(newUser.id);
+    const { password: _, ...safeUser } = newUser;
+    console.log('[MSW] Signup success:', safeUser);
+    console.log('[MSW] Users after signup:', users)
+    return HttpResponse.json({ token: 'mock-token', user: safeUser }, { status: 201 });
   }),
 
   // Профиль пользователя
   http.get('/api/v1.0/user/profile', async ({ request }) => {
-    return HttpResponse.json(adminUser, { status: 200 });
+    // Получаем id последнего залогиненного пользователя из localStorage
+    const currentUserId = getLastLoggedInUserId();
+    const user = users.find(u => u.id === currentUserId);
+    if (!user) {
+      // Нет залогиненного пользователя — возвращаем 401
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    const { password: _, ...safeUser } = user;
+    console.log('[MSW] Profile request, returning user:', safeUser)
+    return HttpResponse.json(safeUser, { status: 200 });
   }),
 
   // Обновление профиля пользователя
   http.post('/api/v1.0/user/profile', async ({ request }) => {
-    const { name, avatar } = (await request.json()) as { name?: string; avatar?: string };
-    adminUser.name = name || adminUser.name;
-    adminUser.avatar = avatar || adminUser.avatar;
-    return HttpResponse.json(adminUser, { status: 200 });
+    const { name } = (await request.json()) as { name?: string; };
+    const currentUserId = getLastLoggedInUserId();
+    const user = users.find(u => u.id === currentUserId);
+    if (!user) {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    if (name) user.name = name;
+    saveUsers();
+    const { password: _, ...safeUser } = user;
+    return HttpResponse.json(safeUser, { status: 200 });
   }),
 
   // Получение чатов
   http.get('/api/v1.0/chat', async ({ request }) => {
-    return HttpResponse.json(chats.filter(c => !c.archived), { status: 200 });
+    return HttpResponse.json(chats.filter(c => !c.isArchived), { status: 200 });
   }),
 
   // Получение сообщений с поддержкой offset/limit и page/limit
@@ -123,19 +207,17 @@ export const handlers = [
   // Создание чата (поддержка title и name)
   http.post('/api/v1.0/chat', async ({ request }) => {
     const body = (await request.json()) as { name?: string; title?: string };
-    // const generatedMessages = generateMessages(String(Date.now()), 20);
     const now = new Date().toISOString();
-    const newChat = {
+    const newChat: Chat = {
       id: String(Date.now()),
-      title: `Новый чат ${chats.length + 1}`,
-      messages: [],
-      lastMessage: {} as any,
-      firstMessage: {} as any,
+      title: body.title || body.name || `Новый чат ${chats.length + 1}`,
+      lastMessage: undefined,
       createdAt: now,
       updatedAt: now,
-      archived: false,
+      isArchived: false,
     };
     chats.push(newChat);
+    messages[newChat.id] = [];
     return HttpResponse.json(newChat, { status: 201 });
   }),
 
@@ -176,7 +258,7 @@ export const handlers = [
     const { id } = params;
     const chat = chats.find(c => c.id === id);
     if (chat) {
-      chat.archived = true;
+      chat.isArchived = true;
       return HttpResponse.json(chat, { status: 200 });
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
@@ -187,7 +269,7 @@ export const handlers = [
     const { id } = params;
     const chat = chats.find(c => c.id === id);
     if (chat) {
-      chat.archived = false;
+      chat.isArchived = false;
       return HttpResponse.json(chat, { status: 200 });
     }
     return HttpResponse.json({ message: 'Chat not found' }, { status: 404 });
@@ -195,28 +277,27 @@ export const handlers = [
 
   // Получение всех чатов (неархивированных)
   http.get('/api/v1.0/chat', async ({ request }) => {
-    return HttpResponse.json(chats.filter(c => !c.archived), { status: 200 });
+    return HttpResponse.json(chats.filter(c => !c.isArchived), { status: 200 });
   }),
 
   // Получение архивированных чатов
   http.get('/api/v1.0/chat/archived', async ({ request }) => {
-    return HttpResponse.json(chats.filter(c => c.archived), { status: 200 });
+    return HttpResponse.json(chats.filter(c => c.isArchived), { status: 200 });
   }),
 
   // Отправка сообщения (реалистично: сохраняем, обновляем lastMessage, эмулируем ассистента)
   http.post('/api/v1.0/chat/:chatId/messages', async ({ params, request }) => {
     const { chatId } = params;
     const { content, type } = (await request.json()) as { content: string; type: string };
-    const newMessage = {
+    const newMessage: Message = {
       id: String(Date.now()),
       chatId: chatId as string,
-      role: MessageSender.USER,
-      files: [],
-      versions: [{
-        content,
-        type: MessageType.TEXT,
-        createdAt: new Date().toISOString(),
-      }],
+      content,
+      type: type as MessageType,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isEdited: false,
+      sender: MessageSender.USER,
     };
     if (!messages[chatId as string]) {
       messages[chatId as string] = [];
@@ -227,35 +308,40 @@ export const handlers = [
     if (chat) {
       chat.lastMessage = newMessage;
     }
-    // Эмулируем "ответ ассистента" через 1.5 секунды (можно усложнить)
-    setTimeout(() => {
-      // Найти дату последнего сообщения
-      const lastMsgArr = messages[chatId as string];
-      let lastDate = new Date();
-      if (lastMsgArr && lastMsgArr.length > 0) {
-        const last = lastMsgArr[lastMsgArr.length - 1];
-        lastDate = new Date(last.versions?.[0]?.createdAt || last.createdAt || Date.now());
-      }
-      const assistantMessage = {
-        id: String(Date.now() + 1),
-        chatId: chatId as string,
-        role: MessageSender.AI,
-        files: [],
-        versions: [{
-          content: 'Это ответ ассистента (мок).',
-          type: MessageType.TEXT,
-          createdAt: new Date(lastDate.getTime() + 1000).toISOString(),
-        }],
-      };
-      if (!messages[chatId as string]) {
-        messages[chatId as string] = [];
-      }
-      messages[chatId as string].push(assistantMessage);
-      if (chat) {
-        chat.lastMessage = assistantMessage;
-      }
-    }, 1500);
-    return HttpResponse.json(newMessage, { status: 201 });
+    // // Эмулируем "ответ ассистента" через 1.5 секунды (можно усложнить)
+    // setTimeout(() => {
+    //   // Найти дату последнего сообщения
+    //   const lastMsgArr = messages[chatId as string];
+    //   let lastDate = new Date();
+    //   if (lastMsgArr && lastMsgArr.length > 0) {
+    //     const last = lastMsgArr[lastMsgArr.length - 1];
+    //     lastDate = new Date(last.createdAt || Date.now());
+    //   }
+    //   const assistantMessage: Message = {
+    //     id: String(Date.now() + 1),
+    //     chatId: chatId as string,
+    //     content: 'Это ответ ассистента (мок).',
+    //     type: MessageType.TEXT,
+    //     createdAt: new Date(lastDate.getTime() + 1000).toISOString(),
+    //     updatedAt: new Date(lastDate.getTime() + 1000).toISOString(),
+    //     isEdited: false,
+    //     sender: MessageSender.AI,
+    //   };
+    //   if (!messages[chatId as string]) {
+    //     messages[chatId as string] = [];
+    //   }
+    //   messages[chatId as string].push(assistantMessage);
+    //   if (chat) {
+    //     chat.lastMessage = assistantMessage;
+    //   }
+    // }, 1500);
+    // return HttpResponse.json(newMessage, { status: 201 });
+  }),
+
+  // Мок для logout
+  http.post('/api/v1.0/auth/logout', () => {
+    setLastLoggedInUserId(null);
+    return HttpResponse.json({ success: true }, { status: 200 });
   }),
 
   // TODO: добавить другие эндпоинты по необходимости

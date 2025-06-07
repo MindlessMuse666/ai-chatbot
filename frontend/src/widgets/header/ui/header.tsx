@@ -10,9 +10,12 @@ import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useTheme } from "@/shared/utils/providers/theme-provider"
 import { useRouter } from "next/navigation"
 import { Role } from "@/entities/role/model/role"
+import { useAuthStore } from "@/features/auth/model/auth-store"
+
 const Header = () => {
   const { theme } = useTheme()
   const { user, fetchUser } = useUserStore()
+  const { logout } = useAuthStore()
   const navigate = useRouter()
 
   useEffect(() => {
@@ -65,11 +68,11 @@ const Header = () => {
                     size="sm"
                     className="w-full justify-center text-foreground text-md hover:bg-primary" 
                     startContent={<LogOut className="w-5 h-5" />}
-                    onPress={() => {
+                    onPress={async () => {
+                      await logout()
                       localStorage.removeItem('token')
                       document.cookie = `token=; path=/;`
                       localStorage.removeItem('refreshToken')
-                      navigate.push('/login')
                     }}
                   >
                     Выйти

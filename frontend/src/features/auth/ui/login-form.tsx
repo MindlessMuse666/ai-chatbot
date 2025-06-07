@@ -26,7 +26,7 @@ export function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(createLoginSchema(t)),
   })
-  const { login: authStoreLogin, isLoading } = useAuthStore()
+  const { login: authStoreLogin, isLoading, user, error } = useAuthStore()
   const router = useRouter()
   const searchParams = useSearchParams()
   const from = searchParams.get('from')
@@ -56,24 +56,23 @@ export function LoginForm() {
 
   // Обработка отправки формы
   const onSubmit = async (data: LoginFormData) => {
+    console.log('[LoginForm] Submit:', data)
     try {
       await authStoreLogin(data.email, data.password)
       setLoginSuccess(true)
+      console.log('[LoginForm] Login success, user:', user)
+      router.replace('/')
     } catch (error) {
+      console.error('[LoginForm] Login error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to login')
     }
   }
 
-  // Редирект после успешного входа
   useEffect(() => {
-    if (loginSuccess) {
-      toast.success('Successfully logged in!')
-      setTimeout(() => {
-        console.log('Redirecting to /chat')
-        router.replace('/chat')
-      }, 300)
+    if (error) {
+      console.error('[LoginForm] Store error:', error)
     }
-  }, [loginSuccess, router])
+  }, [error])
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">

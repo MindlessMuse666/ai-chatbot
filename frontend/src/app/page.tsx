@@ -9,9 +9,12 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('Home page useEffect: isAuthenticated =', isAuthenticated)
     if (isAuthenticated) {
+      console.log('Redirecting to /chat')
       router.replace('/chat')
     } else {
+      console.log('Redirecting to /login')
       router.replace('/login')
     }
   }, [isAuthenticated, router])

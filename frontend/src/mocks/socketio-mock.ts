@@ -56,40 +56,41 @@ export function setupSocketIOMock() {
   });
 
   // Мок обработчиков событий
-  socket.on('sendMessage', (data) => {
-    // Эмулируем получение нового сообщения пользователя
-    socket.emit('message', {
-      type: 'message',
-      payload: {
-        id: Math.random().toString(),
-        chatId: data.chatId,
-        role: 'USER',
-        files: [],
-        versions: [{
-          content: data.content,
-          type: data.type,
-          createdAt: new Date().toISOString(),
-        }],
-      }
-    });
-    // Эмулируем ответ ассистента через 1.5 сек
-    setTimeout(() => {
-      socket.emit('message', {
-        type: 'message',
-        payload: {
-          id: Math.random().toString(),
-          chatId: data.chatId,
-          role: 'AI',
-          files: [],
-          versions: [{
-            content: 'Это ответ ассистента (мок).',
-            type: 'TEXT',
-            createdAt: new Date().toISOString(),
-          }],
-        }
-      });
-    }, 1500);
-  });
+  // socket.on('sendMessage', (data) => {
+  //   // Эмулируем получение нового сообщения пользователя
+  //   socket.emit('message', {
+  //     type: 'message',
+  //     payload: {
+  //       id: Math.random().toString(),
+  //       chatId: data.chatId,
+  //       role: 'USER',
+  //       files: [],
+  //       versions: [{
+  //         content: data.content,
+  //         type: data.type,
+  //         createdAt: new Date().toISOString(),
+  //       }],
+  //     }
+  //   });
+  //   // Эмулируем ответ ассистента через 1.5 сек
+  //   setTimeout(() => {
+  //     socket.emit('message', {
+  //       type: 'message',
+  //       payload: {
+  //         id: Math.random().toString(),
+  //         chatId: data.chatId,
+  //         role: 'AI',
+  //         files: [],
+  //         versions: [{
+  //           content: 'Это ответ ассистента (мок).',
+  //           type: 'TEXT',
+  //           createdAt: new Date().toISOString(),
+  //         }],
+  //       }
+  //     });
+  //   }, 1500);
+  // }
+  // });
 
   // ...другие события
 }

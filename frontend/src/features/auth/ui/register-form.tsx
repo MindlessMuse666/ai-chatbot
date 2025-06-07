@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useTranslation } from 'react-i18next'
 import { DynamicFormFields, type FormField } from '@/shared/ui/dynamic-form'
@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { z } from 'zod'
 import { useAuthStore } from '../model/auth-store'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -27,6 +28,7 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export function RegisterForm() {
   const { t } = useTranslation()
   const { register: authStoreRegister, isLoading } = useAuthStore()
+  const router = useRouter()
 
   // Описание полей формы
   const fields: FormField[] = [
@@ -71,6 +73,7 @@ export function RegisterForm() {
     try {
       await authStoreRegister(data.email, data.password, data.username)
       toast.success('Successfully registered!')
+      router.replace('/chat')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register')
     }

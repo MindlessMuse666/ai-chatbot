@@ -4,15 +4,6 @@ import { MessageSender } from '@/entities/chat/model/types';
 import { faker } from '@faker-js/faker';
 import { MessageType } from '@/entities/chat/model/types';
 
-export const adminUser = {
-  id: '1',
-  email: 'dev@graviton.ru',
-  password: 'zmvqfFNe',
-  role: 'ADMIN',
-  name: 'Админ',
-  avatar: faker.image.avatar(),
-};
-
 export function generateChats(count = 5) {
   return Array.from({ length: count }, (_, i) => ({
     id: String(i + 1),

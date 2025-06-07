@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/logo-dark.svg" sizes="any" />
+        <link rel="icon" href="/logo-dark.svg" sizes="50x50" />
       </head>
       <body className={`${montserrat.variable} antialiased`}>
         <Providers>

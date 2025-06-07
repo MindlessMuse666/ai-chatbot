@@ -287,7 +287,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const assistantMessage = {
           id: String(Date.now() + 1),
           chatId: dto.chatId,
-          content: 'Это ответ ассистента (мок).',
+          content: 'Это ответ ассистента (мок)!!!',
           type: MessageType.TEXT,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
