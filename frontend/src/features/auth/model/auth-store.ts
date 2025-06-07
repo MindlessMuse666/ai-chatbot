@@ -1,21 +1,20 @@
 import { create } from 'zustand';
 import { apiClient } from '@/shared/api/api-client';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-}
+import { updateSocketAuth } from '@/shared/api/socket-service';
+import type { User } from '@/entities/user/model/user';
 
 interface AuthState {
   user: User | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 type AuthStore = {
@@ -23,132 +22,127 @@ type AuthStore = {
   get: () => AuthState;
 };
 
-// Мок-данные для dev-режима
-const MOCK_USER: User = {
-  id: '1',
-  email: 'dev@graviton.ru',
-  username: 'Dev User'
-};
-
+/**
+ * Zustand store для аутентификации пользователя.
+ * Хранит user, статус авторизации, ошибки и методы login/register/logout/checkAuth.
+ */
 export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthStore['get']) => ({
   user: null,
+  accessToken: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
 
+  /**
+   * Авторизация пользователя
+   * @param email — email пользователя
+   * @param password — пароль
+   */
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме используем мок-логин
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock login in development mode');
-        set({ 
-          user: MOCK_USER, 
-          isAuthenticated: true, 
-          isLoading: false 
-        });
-        console.log('isAuthenticated:', get().isAuthenticated);
-        return;
-      }
-
-      // Реальный логин для production
       const response = await apiClient.post('/auth/login', { email, password });
-      const userData = await apiClient.get('/user/profile');
-      set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      const { token, user } = response.data;
+      set({ user, accessToken: token, isAuthenticated: true, isLoading: false });
+      console.log('[auth-store] login success:', { user, token });
+      updateSocketAuth(token);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to login', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to login',
+        isLoading: false
       });
+      console.log('[auth-store] login error:', error);
       throw error;
     }
   },
 
+  /**
+   * Регистрация пользователя
+   * @param email — email пользователя
+   * @param password — пароль
+   * @param username — имя пользователя
+   */
   register: async (email: string, password: string, username: string) => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме используем мок-регистрацию
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock registration in development mode');
-        set({ 
-          user: { ...MOCK_USER, email, username }, 
-          isAuthenticated: true, 
-          isLoading: false 
-        });
-        console.log('isAuthenticated:', get().isAuthenticated);
-        return;
-      }
-
-      // Реальная регистрация для production
       await apiClient.post('/auth/signup', { email, password, username });
       const response = await apiClient.post('/auth/login', { email, password });
-      const userData = await apiClient.get('/user/profile');
-      set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      const { token, user } = response.data;
+      set({ user, accessToken: token, isAuthenticated: true, isLoading: false });
+      console.log('[auth-store] register success:', { user, token });
+      updateSocketAuth(token);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to register', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to register',
+        isLoading: false
       });
+      console.log('[auth-store] register error:', error);
       throw error;
     }
   },
 
+  /**
+   * Выход пользователя из системы
+   */
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме просто очищаем состояние
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock logout in development mode');
-        set({ user: null, isAuthenticated: false, isLoading: false });
-        console.log('isAuthenticated:', get().isAuthenticated);
-        return;
-      }
-
-      // Реальный логаут для production
       await apiClient.post('/auth/logout');
-      set({ user: null, isAuthenticated: false, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
+      console.log('[auth-store] logout success');
+      updateSocketAuth(null);
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to logout', 
-        isLoading: false 
+      set({
+        error: error instanceof Error ? error.message : 'Failed to logout',
+        isLoading: false
       });
+      console.log('[auth-store] logout error:', error);
       throw error;
     }
   },
 
+  /**
+   * Проверка статуса авторизации пользователя
+   */
   checkAuth: async () => {
     const state = get();
     if (state.isLoading) return;
 
     set({ isLoading: true, error: null });
     try {
-      // В dev-режиме проверяем наличие мок-пользователя
-      if (process.env.NODE_ENV === 'development') {
-        if (state.user) {
-          set({ isLoading: false });
-          console.log('isAuthenticated:', get().isAuthenticated);
-          return;
-        }
-        // Если пользователя нет, устанавливаем мок-пользователя
-        set({ 
-          user: MOCK_USER, 
-          isAuthenticated: true, 
-          isLoading: false 
-        });
-        console.log('isAuthenticated:', get().isAuthenticated);
-        return;
-      }
-
       // Реальная проверка для production
       const userData = await apiClient.get('/user/profile');
+      console.log('[auth-store] checkAuth userData', userData)
       set({ user: userData.data, isAuthenticated: true, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      console.log('[auth-store] checkAuth success:', { user: userData.data });
     } catch (error) {
       set({ user: null, isAuthenticated: false, isLoading: false });
-      console.log('isAuthenticated:', get().isAuthenticated);
+      console.log('[auth-store] checkAuth error:', error);
     }
   },
-})); 
+
+  refresh: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await apiClient.post('/auth/refresh');
+      const { token } = response.data;
+      set({ accessToken: token, isAuthenticated: true, isLoading: false });
+      updateSocketAuth(token);
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to refresh',
+        isLoading: false
+      });
+      throw error;
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/reset-password', { email });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+}));

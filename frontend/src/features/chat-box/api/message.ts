@@ -4,11 +4,11 @@ import { useMutation, useQuery, useInfiniteQuery } from "@tanstack/react-query"
 
 const messageApi = {
     sendMessage: async (chatId: string, payload: MessageSendPayload) => {
-        const response = await api.post<Message>(`chats/${chatId}/messages`, payload)
+        const response = await api.post(`/chat/${chatId}/messages`, payload)
         return response.data
     },
     searchMessage: async (chatId: string, payload: MessageSearchPayload) => {
-        const response = await api.get<MessageResponse>(`chats/${chatId}/messages`, { params: payload })
+        const response = await api.get(`/chat/${chatId}/messages`, { params: payload })
         return response.data
     }
 }
@@ -47,5 +47,5 @@ export const useMessageApi = {
     }
 }
 
-export default messageApi
 
+export default messageApi

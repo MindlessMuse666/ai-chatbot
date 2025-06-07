@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useTranslation } from 'react-i18next'
 import { DynamicFormFields, type FormField } from '@/shared/ui/dynamic-form'
@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { z } from 'zod'
 import { useAuthStore } from '../model/auth-store'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,10 +20,17 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
+/**
+ * RegisterForm — форма регистрации пользователя.
+ * Использует react-hook-form, Zod для валидации, интеграцию с Zustand store.
+ * Показывает ошибки через toast, уведомляет об успешной регистрации.
+ */
 export function RegisterForm() {
   const { t } = useTranslation()
   const { register: authStoreRegister, isLoading } = useAuthStore()
+  const router = useRouter()
 
+  // Описание полей формы
   const fields: FormField[] = [
     {
       name: 'email',
@@ -60,10 +68,12 @@ export function RegisterForm() {
     }
   ]
 
+  // Обработка отправки формы
   const onSubmit = async (data: RegisterFormData) => {
     try {
       await authStoreRegister(data.email, data.password, data.username)
       toast.success('Successfully registered!')
+      router.replace('/chat')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register')
     }
@@ -71,7 +81,10 @@ export function RegisterForm() {
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
-      <DynamicFormFields 
+      <div className="flex justify-center mb-6">
+        <img src="/logo-dark.svg" alt="Logo" className="h-11 w-auto" />
+      </div>
+      <DynamicFormFields
         fields={fields}
         schema={registerSchema}
         onSubmit={onSubmit}
@@ -90,8 +103,8 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-foreground-secondary mt-6">
         {t('auth.haveAccount')}{' '}
-        <Link 
-          href="/login" 
+        <Link
+          href="/login"
           className="text-primary-foreground hover:underline font-medium"
         >
           {t('auth.login')}

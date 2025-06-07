@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
 import { useChatStore } from '@/entities/chat/model/chat-store'
 import Link from 'next/link'
+import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 
 const ChatPage = () => {
+  useAuthGuard()
   const { chats } = useChatStore()
-  console.log('MOCK CHATS:', useChatStore.getState().chats)
-  console.log('ChatPage rendered', chats)
   return (
     <div>
       <h2>Ваши чаты</h2>
@@ -24,5 +24,6 @@ const ChatPage = () => {
     </div>
   )
 }
+
 
 export default ChatPage

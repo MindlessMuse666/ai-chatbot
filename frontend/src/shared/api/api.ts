@@ -1,8 +1,13 @@
 import axios from 'axios'
 import authApi from '@/features/auth/api/auth'
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+    ? '/api/v1.0'
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1.0';
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   }

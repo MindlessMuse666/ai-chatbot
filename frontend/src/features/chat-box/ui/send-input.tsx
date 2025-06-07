@@ -5,13 +5,11 @@ import { useState, useRef } from 'react'
 import { Button } from '@heroui/react'
 import { ArrowUp, Paperclip, File, FileText, Image, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useMessageApi } from '../api/message'
-import { queryClient } from '@/shared/lib/react-query'
-import { toast } from 'sonner'
+import { useChatStore } from '@/entities/chat/model/chat-store'
 import { v4 as uuidv4 } from 'uuid'
 import { mediaApi } from '@/entities/media/api/media'
 import { UploadingFile } from '@/entities/media/model/media'
-
+import { MessageType } from '@/entities/chat/model/types'
 interface SendInputProps {
   chatId: string
   onMessageSent?: (tempMessage: any) => void
@@ -25,7 +23,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const maxSymbols = 10000
-  const { mutate: sendMessage, isPending } = useMessageApi.useSendMessage(chatId)
+  const { sendMessage, isLoading, isAwaitingAssistant } = useChatStore();
 
   const handleDragEnter = (e: any) => {
     e.preventDefault()
@@ -146,29 +144,9 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
       setUploadingFiles([])
       
       sendMessage({ 
-        type: 'TEXT', 
+        chatId,
+        type: MessageType.TEXT,
         content: message.trim(),
-        url: uploadedUrls
-      }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['infiniteMessages', chatId] })
-        },
-        onError: (error: any) => {
-          queryClient.invalidateQueries({ queryKey: ['infiniteMessages', chatId] })
-          
-          const statusCode = error.response?.status || error
-          
-          if (statusCode === 403) {
-            toast.error(t('toast.chat.limitExceeded'))
-          } else {
-            toast.error(t('toast.chat.sendError'), {
-              description: error.message
-            })
-          }
-          if (onMessageError) {
-            onMessageError(tempId)
-          }
-        }
       })
     }
   }
@@ -176,7 +154,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (message.trim() && !isOverLimit && !isPending) {
+      if (message.trim() && !isOverLimit && !isLoading) {
         handleSubmit(e)
       }
     }
@@ -214,6 +192,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
           placeholder={t('chat.placeholder.send')}
           rows={1}
           className="flex-grow resize-none px-3 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px] max-h-[200px]"
+          disabled={isAwaitingAssistant}
         />
         <input
           type="file"
@@ -229,7 +208,7 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
           radius="md"
           onClick={() => fileInputRef.current?.click()}
           className="bg-primary-foreground text-background shadow-sm transition-all duration-200 hover:bg-primary-foreground/90 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-          isDisabled={isPending}
+          isDisabled={isLoading}
         >
           <Paperclip size={18} />
         </Button>
@@ -238,9 +217,9 @@ const SendInput = ({ chatId, onMessageSent, onMessageError }: SendInputProps) =>
           isIconOnly
           variant="flat"
           radius="md"
-          isLoading={isPending}
+          isLoading={isLoading}
           className="bg-primary-foreground text-background shadow-sm transition-all duration-200 hover:bg-primary-foreground/90 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-          isDisabled={!message.trim() || isOverLimit || isPending || uploadingFiles.some((file: UploadingFile) => file.progress !== 100)}
+          isDisabled={!message.trim() || isOverLimit || isLoading || isAwaitingAssistant || uploadingFiles.some((file: UploadingFile) => file.progress !== 100)}
         >
           <ArrowUp size={18} />
         </Button>

@@ -186,7 +186,7 @@ const CardPopover = ({ user }: { user: User }) => {
                 <div key={permission.id} className="flex flex-col gap-2">
                   <Checkbox
                     isSelected={isPermissionSelected(permission)}
-                    onValueChange={(checked) => handlePermissionToggle(permission, checked)}
+                    onValueChange={(checked: boolean) => handlePermissionToggle(permission, checked)}
                   >
                     <div>
                       <p className="font-medium">{permission.role}</p>
@@ -200,7 +200,7 @@ const CardPopover = ({ user }: { user: User }) => {
                       size="sm"
                       label={t('permission.limitValue')}
                       value={selectedPermissions[permission.id].limitValue?.toString() || ''}
-                      onChange={(e) => handleLimitValueChange(permission, e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLimitValueChange(permission, e.target.value)}
                       className="max-w-[200px] ml-6"
                       placeholder={t('permission.noLimit')}
                     />

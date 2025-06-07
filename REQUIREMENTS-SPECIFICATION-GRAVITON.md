@@ -48,7 +48,7 @@
 - Next.js (имеющийся стартовый проект)
 - React 18+
 - TypeScript
-- WebSocket для real-time обновлений
+- Socket.IO для real-time обновлений
 - Redux Toolkit или React Query для управления состоянием
 - SCSS или CSS-модули для стилей
 - Адаптивная вёрстка (mobile-first)

@@ -15,19 +15,25 @@ import dynamic from 'next/dynamic'
 
 const Toaster = dynamic(() => import('sonner').then(mod => mod.Toaster), { ssr: false })
 
+/**
+ * LoginForm — форма входа пользователя.
+ * Использует react-hook-form, Zod для валидации, интеграцию с Zustand store.
+ * Показывает ошибки через toast, редиректит после успешного входа.
+ */
 export function LoginForm() {
   const { t } = useTranslation()
   const { mutate: login, isPending } = useLogin()
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(createLoginSchema(t)),
   })
-  const { login: authStoreLogin, isLoading } = useAuthStore()
+  const { login: authStoreLogin, isLoading, user, error } = useAuthStore()
   const router = useRouter()
   const searchParams = useSearchParams()
   const from = searchParams.get('from')
   const fallback = '/chat'
   const [loginSuccess, setLoginSuccess] = useState(false)
 
+  // Описание полей формы
   const fields: FormField[] = [
     {
       name: 'email',
@@ -48,28 +54,32 @@ export function LoginForm() {
     }
   ]
 
+  // Обработка отправки формы
   const onSubmit = async (data: LoginFormData) => {
+    console.log('[LoginForm] Submit:', data)
     try {
       await authStoreLogin(data.email, data.password)
       setLoginSuccess(true)
+      console.log('[LoginForm] Login success, user:', user)
+      router.replace('/')
     } catch (error) {
+      console.error('[LoginForm] Login error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to login')
     }
   }
 
   useEffect(() => {
-    if (loginSuccess) {
-      toast.success('Successfully logged in!')
-      setTimeout(() => {
-        console.log('Redirecting to /chat')
-        router.replace('/chat')
-      }, 300)
+    if (error) {
+      console.error('[LoginForm] Store error:', error)
     }
-  }, [loginSuccess, router])
+  }, [error])
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
-      <DynamicFormFields 
+      <div className="flex justify-center mb-6">
+        <img src="/logo-dark.svg" alt="Logo" className="h-11 w-auto" />
+      </div>
+      <DynamicFormFields
         fields={fields}
         schema={createLoginSchema(t)}
         onSubmit={onSubmit}
@@ -86,15 +96,26 @@ export function LoginForm() {
         </div>
       </DynamicFormFields>
 
+      {/* Ссылка на регистрацию */}
       <p className="text-center text-sm text-foreground-secondary mt-6">
         {t('auth.noAccount')}{' '}
-        <Link 
-          href="/register" 
+        <Link
+          href="/register"
           className="text-primary-foreground hover:underline font-medium"
         >
           {t('auth.createAccount')}
         </Link>
       </p>
+
+      {/* Ссылка на сброс пароля */}
+      <div className="text-center text-sm text-foreground-secondary mt-6">
+        <Link 
+          href="/forgot-password"
+          className="text-primary-foreground hover:underline font-medium"
+        >
+          {t('auth.forgotPassword')}
+        </Link>
+      </div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { Tabs, Tab } from "@heroui/react";
 import UserList from "@/entities/user/ui/user-list";
@@ -21,5 +21,5 @@ const AdministrationTabs = () => {
   );
 };
 
-export default AdministrationTabs
 
+export default AdministrationTabs

@@ -3,8 +3,10 @@
 import Header from '@/widgets/header/ui/header'
 import Sidebar from '@/widgets/sidebar/ui/sidebar'
 import { SidebarProvider } from '@/widgets/sidebar/model/sidebar-context'
+import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  useAuthGuard()
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-deep-background text-foreground">
       <Header />

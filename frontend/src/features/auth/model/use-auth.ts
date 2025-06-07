@@ -13,10 +13,10 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (data: LoginFormData) => {
-      const hashedPassword = hashPassword(data.password)
+      const isMock = process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
       return authApi.login({
         email: data.email,
-        password: hashedPassword
+        password: isMock ? data.password : hashPassword(data.password)
       })
     },
     onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
@@ -40,11 +40,11 @@ export const useRegister = () => {
 
   return useMutation({
     mutationFn: (data: Omit<RegisterFormData, 'confirmPassword'>) => {
-      const hashedPassword = hashPassword(data.password)
+      const isMock = process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
       return authApi.register({
         email: data.email,
         name: data.name,
-        password: hashedPassword
+        password: isMock ? data.password : hashPassword(data.password)
       })
     },
     onSuccess: async (data: { accessToken: string; refreshToken: string }) => {

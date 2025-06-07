@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { chatApi } from '../api/chat-api';
 import type { Chat, Message, CreateChatDto, UpdateChatDto, CreateMessageDto, UpdateMessageDto } from './types';
-import type { WebSocketMessage } from '@/shared/api/websocket-client';
+import { generateMessages } from '@/mocks/data';
+import { MessageSender, MessageType } from './types';
+import { useAuthStore } from '@/features/auth/model/auth-store';
 
 interface ChatState {
   chats: Chat[];
@@ -10,7 +12,8 @@ interface ChatState {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  
+  isAwaitingAssistant: boolean;
+
   // Chat operations
   fetchChats: () => Promise<void>;
   fetchArchivedChats: () => Promise<void>;
@@ -21,15 +24,15 @@ interface ChatState {
   archiveChat: (id: string) => Promise<void>;
   unarchiveChat: (id: string) => Promise<void>;
   setCurrentChat: (chat: Chat | null) => void;
-  
+
   // Message operations
   fetchMessages: (chatId: string, page?: number) => Promise<void>;
   sendMessage: (dto: CreateMessageDto) => Promise<void>;
   updateMessage: (messageId: string, dto: UpdateMessageDto) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
 
-  // WebSocket operations
-  handleWebSocketMessage: (message: WebSocketMessage) => void;
+  // Socket.IO operations
+  handleWebSocketMessage: (message: any) => void;
 }
 
 const MOCK_CHATS: Chat[] = [
@@ -68,6 +71,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
+  isAwaitingAssistant: false,
 
   // Chat operations
   fetchChats: async () => {
@@ -81,10 +85,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       set({ chats, isLoading: false });
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch chats',
-        isLoading: false 
-      });
+      if (useAuthStore.getState().isAuthenticated) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch chats',
+          isLoading: false
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 
@@ -94,10 +102,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const archivedChats = await chatApi.getArchivedChats();
       set({ archivedChats, isLoading: false });
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch archived chats',
-        isLoading: false 
-      });
+      if (useAuthStore.getState().isAuthenticated) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch archived chats',
+          isLoading: false
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 
@@ -105,14 +117,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const newChat = await chatApi.createChat(dto);
-      set(state => ({ 
+      set(state => ({
         chats: [newChat, ...state.chats],
-        isLoading: false 
+        isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to create chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -122,16 +134,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const updatedChat = await chatApi.updateChat(id, dto);
       set(state => ({
-        chats: state.chats.map(chat => 
+        chats: state.chats.map(chat =>
           chat.id === id ? updatedChat : chat
         ),
         currentChat: state.currentChat?.id === id ? updatedChat : state.currentChat,
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to update chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -146,9 +158,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -164,9 +176,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -182,9 +194,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to archive chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -199,51 +211,121 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to unarchive chat',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
 
   setCurrentChat: (chat) => {
-    set({ currentChat: chat, messages: [] });
+    set({ currentChat: chat });
   },
 
   // Message operations
   fetchMessages: async (chatId, page = 1) => {
     set({ isLoading: true, error: null });
     try {
-      const messages = await chatApi.getMessages({ chatId, page });
+      let messages: Message[];
+      if (process.env.NODE_ENV === 'development') {
+        // Для тестовых чатов всегда генерируем 20 Faker-JS сообщений
+        if (chatId === '1' || chatId === '2') {
+          messages = generateMessages(chatId, 20)
+            .map((msg) => ({
+              id: msg.id,
+              chatId: msg.chatId,
+              content: msg.versions[0]?.content || '',
+              type: msg.versions[0]?.type || MessageType.TEXT,
+              createdAt: msg.versions[0]?.createdAt || new Date().toISOString(),
+              updatedAt: msg.versions[0]?.createdAt || new Date().toISOString(),
+              isEdited: false,
+              sender: msg.role,
+            }))
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        } else {
+          // Для новых чатов — пусто
+          messages = [];
+        }
+      } else {
+        messages = await chatApi.getMessages({ chatId, page });
+      }
       set(state => ({
         messages: page === 1 ? messages : [...state.messages, ...messages],
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch messages',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
 
   sendMessage: async (dto) => {
-    set({ isLoading: true, error: null });
+    if (process.env.NODE_ENV === 'development') {
+      // Мгновенно добавляем сообщение пользователя
+      const userMessage = {
+        id: String(Date.now()),
+        chatId: dto.chatId,
+        content: dto.content,
+        type: dto.type,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isEdited: false,
+        sender: MessageSender.USER,
+      };
+      set(state => ({
+        messages: [...state.messages, userMessage],
+        chats: state.chats.map(chat =>
+          chat.id === dto.chatId ? { ...chat, lastMessage: userMessage } : chat
+        ),
+        isLoading: false,
+        isAwaitingAssistant: true,
+      }));
+      // Через 1.5 сек — ответ ассистента
+      setTimeout(() => {
+        const assistantMessage = {
+          id: String(Date.now() + 1),
+          chatId: dto.chatId,
+          content: 'Это ответ ассистента (мок)!!!',
+          type: MessageType.TEXT,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isEdited: false,
+          sender: MessageSender.AI,
+        };
+        set(state => ({
+          messages: [...state.messages, assistantMessage],
+          chats: state.chats.map(chat =>
+            chat.id === dto.chatId ? { ...chat, lastMessage: assistantMessage } : chat
+          ),
+          isAwaitingAssistant: false,
+        }));
+      }, 1500);
+      return;
+    }
+    // ... production/real API ...
+    set({ isLoading: true, error: null, isAwaitingAssistant: true });
     try {
       const message = await chatApi.createMessage(dto);
       set(state => ({
         messages: [...state.messages, message],
-        chats: state.chats.map(chat => 
-          chat.id === dto.chatId 
+        chats: state.chats.map(chat =>
+          chat.id === dto.chatId
             ? { ...chat, lastMessage: message }
             : chat
         ),
         isLoading: false
       }));
+      // Ждём появления ответа ассистента (через 1.5 сек)
+      setTimeout(() => {
+        set({ isAwaitingAssistant: false });
+      }, 1600);
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to send message',
-        isLoading: false 
+        isLoading: false,
+        isAwaitingAssistant: false
       });
     }
   },
@@ -253,15 +335,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const updatedMessage = await chatApi.updateMessage(messageId, dto);
       set(state => ({
-        messages: state.messages.map(message => 
+        messages: state.messages.map(message =>
           message.id === messageId ? updatedMessage : message
         ),
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to update message',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -275,36 +357,61 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete message',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
 
-  // WebSocket operations
+  // Socket.IO operations
   handleWebSocketMessage: (message) => {
     switch (message.type) {
       case 'message':
         const newMessage = message.payload as Message;
         set(state => ({
           messages: [...state.messages, newMessage],
-          chats: state.chats.map(chat => 
-            chat.id === newMessage.chatId 
+          chats: state.chats.map(chat =>
+            chat.id === newMessage.chatId
               ? { ...chat, lastMessage: newMessage }
               : chat
           ),
         }));
+
+        // Имитируем ответ ассистента через 1.5 секунды
+        if (newMessage.sender === MessageSender.USER) {
+          setTimeout(() => {
+            const assistantMessage: Message = {
+              id: String(Date.now()),
+              chatId: newMessage.chatId,
+              content: 'Это автоматический ответ ассистента',
+              type: MessageType.TEXT,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              isEdited: false,
+              sender: MessageSender.AI,
+            };
+
+            set(state => ({
+              messages: [...state.messages, assistantMessage],
+              chats: state.chats.map(chat =>
+                chat.id === assistantMessage.chatId
+                  ? { ...chat, lastMessage: assistantMessage }
+                  : chat
+              ),
+            }));
+          }, 1500);
+        }
         break;
 
       case 'chat_update':
         const updatedChat = message.payload as Chat;
         set(state => ({
-          chats: state.chats.map(chat => 
+          chats: state.chats.map(chat =>
             chat.id === updatedChat.id ? updatedChat : chat
           ),
-          currentChat: state.currentChat?.id === updatedChat.id 
-            ? updatedChat 
+          currentChat: state.currentChat?.id === updatedChat.id
+            ? updatedChat
             : state.currentChat,
         }));
         break;
