@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { apiClient } from '@/shared/api/api-client';
 import { updateSocketAuth } from '@/shared/api/socket-service';
 import type { User } from '@/entities/user/model/user';
+import axios from 'axios'
 
 interface AuthState {
   user: User | null;
@@ -15,6 +16,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refresh: () => Promise<void>;
+  clearError: () => void;
 }
 
 type AuthStore = {
@@ -47,12 +49,21 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       console.log('[auth-store] login success:', { user, token });
       updateSocketAuth(token);
     } catch (error) {
+      let errorMessage = 'Failed to login';
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          errorMessage = 'Некорректный email или пароль';
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       set({
-        error: error instanceof Error ? error.message : 'Failed to login',
+        error: errorMessage,
         isLoading: false
       });
       console.log('[auth-store] login error:', error);
-      throw error;
     }
   },
 
@@ -72,12 +83,19 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       console.log('[auth-store] register success:', { user, token });
       updateSocketAuth(token);
     } catch (error) {
+      let errorMessage = 'Failed to register';
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       set({
-        error: error instanceof Error ? error.message : 'Failed to register',
+        error: errorMessage,
         isLoading: false
       });
       console.log('[auth-store] register error:', error);
-      throw error;
     }
   },
 
@@ -145,4 +163,6 @@ export const useAuthStore = create<AuthState>((set: AuthStore['set'], get: AuthS
       throw error;
     }
   },
+
+  clearError: () => set({ error: null }),
 }));
