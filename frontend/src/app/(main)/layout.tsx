@@ -1,6 +1,6 @@
 'use client'
 
-import Header from '@/widgets/header/ui/header'
+import Header from '@/features/header/ui/header'
 import Sidebar from '@/widgets/sidebar/ui/sidebar'
 import { SidebarProvider } from '@/widgets/sidebar/model/sidebar-context'
 import { useAuthGuard } from '@/shared/hooks/use-auth-guard'

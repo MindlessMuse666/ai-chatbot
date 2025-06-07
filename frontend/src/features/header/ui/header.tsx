@@ -1,9 +1,13 @@
-'use client'
+/**
+ * Header — верхний компонент приложения.
+ * Отображает логотип, переключатель темы, профиль пользователя и навигацию.
+ * Для ADMIN отображает кнопку перехода в админ-панель.
+ * @module features/header
+ */
+"use client";
 
-import { useUserStore } from "@/entities/user/model/store"
 import { Button, Popover, PopoverTrigger, PopoverContent } from "@heroui/react"
 import Link from "next/link"
-import { useEffect } from "react"
 import Image from "next/image"
 import { User, LogOut, Settings } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
@@ -12,31 +16,32 @@ import { useRouter } from "next/navigation"
 import { Role } from "@/entities/role/model/role"
 import { useAuthStore } from "@/features/auth/model/auth-store"
 
+/**
+ * Header — основной компонент верхней панели.
+ * Показывает логотип, переключатель темы, профиль пользователя и навигацию.
+ * @returns {JSX.Element}
+ */
 const Header = () => {
   const { theme } = useTheme()
-  const { user, fetchUser } = useUserStore()
-  const { logout } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const navigate = useRouter()
-
-  useEffect(() => {
-    if (!user) {
-      fetchUser()
-    }
-  }, [user, fetchUser])
 
   return (
     <header className="border-b border-primary bg-background sticky top-0 z-10">
       <div className="mx-auto px-10 h-20 flex items-center justify-between">
+        {/* Логотип и переход на главную */}
         <Link href="/chat" className="text-xl font-semibold text-foreground">
           <Image src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} alt="logo" width={40} height={40} />
         </Link>
 
         <div className="flex items-center gap-4">
+          {/* Переключатель темы */}
           <ThemeToggle />
+          {/* Если пользователь авторизован — показываем профиль */}
           {user ? (
             <Popover placement="bottom-end">
               <PopoverTrigger asChild>
-                <Button variant="flat" size="lg" isIconOnly>
+                <Button variant="flat" size="lg" isIconOnly aria-label="Профиль">
                   <User className="w-6 h-6" />
                 </Button>
               </PopoverTrigger>
@@ -48,21 +53,21 @@ const Header = () => {
                     <p className="text-sm text-foreground-secondary">{user?.role === Role.ADMIN ? "Администратор" : "Пользователь"}</p>
                   </div>
                   <div className="w-full h-[1px] bg-primary my-1" />
+                  {/* Кнопка администрирования только для ADMIN */}
                   {user?.role === Role.ADMIN && (
-                    <>
-                      <Button 
-                        variant="light"
-                        size="sm"
-                    className="w-full justify-center text-foreground text-md hover:bg-primary" 
-                    startContent={<Settings className="w-5 h-5" />}
-                    onPress={() => {
-                      navigate.push('/administration')
-                    }}
-                  >
-                        Администрирование
-                      </Button>
-                    </>
+                    <Button 
+                      variant="light"
+                      size="sm"
+                      className="w-full justify-center text-foreground text-md hover:bg-primary" 
+                      startContent={<Settings className="w-5 h-5" />}
+                      onPress={() => {
+                        navigate.push('/administration')
+                      }}
+                    >
+                      Администрирование
+                    </Button>
                   )}
+                  {/* Кнопка выхода */}
                   <Button 
                     variant="light"
                     size="sm"
@@ -81,6 +86,7 @@ const Header = () => {
               </PopoverContent>
             </Popover>
           ) : (
+            // Кнопка входа для неавторизованных
             <Button 
               variant="flat" 
               size="lg"
@@ -93,6 +99,7 @@ const Header = () => {
       </div>
     </header>
   )
-} 
+}
+
 
 export default Header
