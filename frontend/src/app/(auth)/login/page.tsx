@@ -1,9 +1,8 @@
 "use client"
 
-
 import { LoginForm } from '@/features/auth/ui/login-form'
 import { useAuthStore } from '@/features/auth/model/auth-store'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -14,7 +13,6 @@ import { toast } from 'sonner'
 export default function LoginPage() {
   const { checkAuth, isLoading } = useAuthStore()
   const searchParams = useSearchParams()
-  const [toastShown, setToastShown] = useState(false)
 
   // Проверка авторизации при монтировании
   useEffect(() => {

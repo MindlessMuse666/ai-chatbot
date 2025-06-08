@@ -76,9 +76,12 @@ npm run mock-server
 ![Login](frontend/public/screenshots/demo-login.png)
 ![Register](frontend/public/screenshots/demo-register.png)
 ![Chat List](frontend/public/screenshots/demo-chats.png)
+![Chat List (Empty)](frontend/public/screenshots/demo-chats-without-chats.png)
 ![Chat Box](frontend/public/screenshots/demo-chatbox.png)
 
-_(В будущем будет доступна онлайн-демо-версия на отдельном субдомене)_
+- Современный UI: анимированный сайдбар с тултипами, плавные переходы, современный футер в стиле header.
+- Карточки чатов и кнопки — интерактивные, с плавными hover/active-эффектами.
+- Полная адаптивность и поддержка тёмной темы.
 
 ## 📄 Техническое задание
 

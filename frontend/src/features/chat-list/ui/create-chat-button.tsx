@@ -14,6 +14,13 @@ interface CreateChatButtonProps {
   variant?: 'default' | 'outline'
 }
 
+/**
+ * CreateChatButton — кнопка создания нового чата.
+ * Современный стиль, плавная анимация, обработка загрузки.
+ * @param variant — стиль кнопки ('default' | 'outline')
+ * @module features/chat-list/ui/create-chat-button
+ */
+
 export const CreateChatButton = ({ variant = 'default' }: CreateChatButtonProps) => {
   const { t } = useTranslation()
   const { mutate: createChat, isPending } = useChatApi.useCreateChat()
@@ -37,8 +44,8 @@ export const CreateChatButton = ({ variant = 'default' }: CreateChatButtonProps)
     <Button 
       variant={variant} 
       size="sm" 
-      className="gap-2" 
-      startContent={!isPending && <Plus className="h-4 w-4" />}
+      className="gap-2 rounded-xl bg-primary-foreground text-white px-4 py-2 text-base shadow-sm hover:bg-primary-foreground/80 focus:bg-primary-foreground/90 transition-all duration-200"
+      startContent={!isPending && <Plus className="h-5 w-5" />}
       onPress={handleCreateChat}
       isLoading={isPending}
     >
