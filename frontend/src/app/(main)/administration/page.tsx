@@ -1,4 +1,4 @@
-import AdministrationTabs from "@/widgets/administation-tabs/ui/administation-tabs"
+import AdministrationTabs from "@/features/administration/ui/administation-tabs"
 
 const AdministrationPage = () => {
     return (
@@ -7,5 +7,6 @@ const AdministrationPage = () => {
         </div>
     )
 }
+
 
 export default AdministrationPage

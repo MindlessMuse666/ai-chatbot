@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
 import Header from '@/features/header/ui/header'
-import Sidebar from '@/widgets/sidebar/ui/sidebar'
-import { SidebarProvider } from '@/widgets/sidebar/model/sidebar-context'
+import Sidebar from '@/features/sidebar/ui/sidebar'
+import { SidebarProvider } from '@/features/sidebar/model/sidebar-context'
 import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -21,5 +21,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
+
 
 export default MainLayout

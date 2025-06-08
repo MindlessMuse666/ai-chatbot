@@ -1,13 +1,12 @@
-'use client'
+"use client";
 
 import React from 'react'
 import { Button } from "@heroui/react"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useChatApi } from "../api/chat"
-import { useSidebar } from "@/widgets/sidebar/model/sidebar-context"
+import { useSidebar } from "@/features/sidebar/model/sidebar-context"
 import { useRouter } from "next/navigation"
-import { Chat } from "../model/chat"
 import { toast } from 'sonner'
 import { useChatStore } from '@/entities/chat/model/chat-store'
 
@@ -48,6 +47,5 @@ export const CreateChatButton = ({ variant = 'default' }: CreateChatButtonProps)
   )
 }
 
+
 export default CreateChatButton
-
-
