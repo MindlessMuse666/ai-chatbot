@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FC } from 'react';
 import { format } from 'date-fns';
-import type { Chat } from '../model/chat';
-import type { Message } from '@/features/chat-box/model/message';
 import { useChatStore } from '@/entities/chat/model/chat-store';
-import { ChatActionsPopover } from './chat-actions-popover';
+import { ChatActionsPopover } from '@/features/chat-list/ui/chat-actions-popover';
+import type { Chat } from '@/features/chat-list/model/chat';
+import type { Message } from '@/features/chat-box/model/message';
 
 interface ChatListItemProps {
   chat: Chat & { lastMessage?: Message };
@@ -11,6 +11,10 @@ interface ChatListItemProps {
   isArchived?: boolean;
 }
 
+/**
+ * TimeClient — компонент для отображения времени сообщения.
+ * @param date — дата/время
+ */
 function TimeClient({ date }: { date?: string | Date }) {
   const [time, setTime] = useState('');
   useEffect(() => {
@@ -29,21 +33,22 @@ function TimeClient({ date }: { date?: string | Date }) {
  * @param isArchived — флаг архивного чата
  * @module features/chat-list/ui/chat-list-item
  */
-export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) => {
+export const ChatListItem: FC<ChatListItemProps> = ({ chat, onSelect, isArchived }) => {
   const { currentChat } = useChatStore();
   const isActive = currentChat?.id === chat.id;
 
   return (
     <div
-      className={`
-        flex flex-col gap-1 p-3 rounded-2xl cursor-pointer relative
-        transition-colors duration-200
-        border-none
-        ${isActive
-          ? 'bg-primary/80 dark:bg-primary/60'
-          : 'bg-primary/40 dark:bg-primary/30 hover:bg-primary/90 dark:hover:bg-primary/80'}
-      `}
+      className={
+        `flex flex-col gap-1 p-4 rounded-2xl cursor-pointer relative transition-all duration-200 border-2 mb-2 ` +
+        (isActive
+          ? 'bg-primary-90 border-primary-foreground'
+          : 'bg-primary-40 border-transparent hover:bg-primary-80 hover:border-primary-foreground')
+      }
       onClick={() => onSelect(chat.id)}
+      tabIndex={0}
+      role="button"
+      aria-pressed={isActive}
     >
       <div className="flex items-center justify-between gap-2 min-w-0">
         <div className="flex items-center min-w-0 gap-2">
@@ -72,4 +77,4 @@ export const ChatListItem = ({ chat, onSelect, isArchived }: ChatListItemProps) 
       )}
     </div>
   );
-}; 
+};
