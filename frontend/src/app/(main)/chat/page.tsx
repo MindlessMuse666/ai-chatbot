@@ -1,9 +1,23 @@
-"use client"
+"use client";
 
 import { useChatStore } from '@/entities/chat/model/chat-store'
 import Link from 'next/link'
 import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 
+/**
+ * ChatPage — страница со списком чатов пользователя.
+ * 
+ * Компонент отображает:
+ * - Список всех доступных чатов
+ * - Ссылки для перехода в конкретный чат
+ * - Сообщение при отсутствии чатов
+ * 
+ * Использует:
+ * - useAuthGuard для защиты роута
+ * - useChatStore для получения списка чатов
+ * 
+ * @returns {JSX.Element} Страница со списком чатов
+ */
 const ChatPage = () => {
   useAuthGuard()
   const { chats } = useChatStore()

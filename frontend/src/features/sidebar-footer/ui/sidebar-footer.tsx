@@ -1,3 +1,11 @@
+/**
+ * SidebarFooter - компонент подвала сайдбара.
+ * Отображает кнопки настроек и помощи, а также управляет модальными окнами.
+ * 
+ * @component
+ * @returns {JSX.Element} Компонент подвала сайдбара
+ */
+
 'use client'
 
 import { Button, useDisclosure } from "@heroui/react"
@@ -8,11 +16,15 @@ import HelpModal from "./help-modal"
 
 const SidebarFooter = () => {
   const { t } = useTranslation()
+  
+  // Управление состоянием модального окна настроек
   const { 
     isOpen: isSettingsOpen, 
     onOpen: onSettingsOpen, 
     onClose: onSettingsClose 
   } = useDisclosure()
+
+  // Управление состоянием модального окна помощи
   const { 
     isOpen: isHelpOpen, 
     onOpen: onHelpOpen, 
@@ -21,9 +33,12 @@ const SidebarFooter = () => {
 
   return (
     <div className="flex flex-col w-full">
+      {/* Текст помощи */}
       <p className="text-md text-foreground-secondary mb-2">
         {t('sidebar.footer.help')}
       </p>
+
+      {/* Кнопка настроек */}
       <Button 
         variant="light" 
         size="lg" 
@@ -33,6 +48,8 @@ const SidebarFooter = () => {
       >
         {t('button.settings')}
       </Button>
+
+      {/* Кнопка помощи */}
       <Button 
         variant="light" 
         size="lg" 
@@ -42,10 +59,13 @@ const SidebarFooter = () => {
       >
         {t('button.help')}
       </Button>
+
+      {/* Копирайт */}
       <p className="text-sm text-foreground-secondary text-center mt-4">
         {t('sidebar.footer.copyright')}
       </p>
 
+      {/* Модальные окна */}
       <SettingsModal isOpen={isSettingsOpen} onClose={onSettingsClose} />
       <HelpModal isOpen={isHelpOpen} onClose={onHelpClose} />
     </div>

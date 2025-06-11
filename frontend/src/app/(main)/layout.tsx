@@ -1,10 +1,23 @@
-'use client'
+"use client";
 
 import Header from '@/widgets/header/ui/header'
 import Sidebar from '@/widgets/sidebar/ui/sidebar'
 import { SidebarProvider } from '@/widgets/sidebar/model/sidebar-context'
 import { useAuthGuard } from '@/shared/hooks/use-auth-guard'
 
+/**
+ * MainLayout — основной layout приложения для защищённых страниц.
+ * 
+ * Компонент обеспечивает:
+ * - Защиту роутов через useAuthGuard
+ * - Общую структуру с header и sidebar
+ * - Контекст для управления состоянием sidebar
+ * - Адаптивную верстку с flexbox
+ * 
+ * @param {Object} props - Свойства компонента
+ * @param {React.ReactNode} props.children - Дочерние компоненты для рендеринга
+ * @returns {JSX.Element} Основной layout приложения
+ */
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   useAuthGuard()
   return (
@@ -21,5 +34,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
+
 
 export default MainLayout
