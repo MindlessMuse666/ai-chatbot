@@ -42,7 +42,7 @@ export function ForgotPasswordForm() {
         fields={fields}
         schema={forgotPasswordSchema}
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-6"
         submitButton={{
           text: t('auth.submit.resetPassword'),
           isLoading: false,
@@ -52,27 +52,27 @@ export function ForgotPasswordForm() {
             <h1 className="text-xl text-foreground">
                 {t('auth.forgotPassword')}
             </h1>
+
+            <p className="text-center text-gray-600 text-sm max-w-md mx-auto leading-relaxed mt-3 mb-2 px-4 font-light tracking-wide">
+              {t('auth.forgotPasswordDescription')}
+            </p>
         </div>
         </DynamicFormFields>
 
-        <div className="text-center text-sm text-foreground-secondary mt-6">
-            <Link 
-                href="/forgot-password"
-                className="text-primary-foreground hover:underline font-medium">
-                {t('auth.backToLogin')}
-            </Link>
-        </div>
+      <div className="text-center text-sm text-foreground-secondary space-x-1 mt-8">
+        <Link
+          href="/login"
+          className="text-primary-foreground hover:underline font-medium">
+          {t('auth.login')}
+        </Link>
 
-        {/* Ссылка на регистрацию */}
-      <p className="text-center text-sm text-foreground-secondary mt-6">
-        {t('auth.noAccount')}{' '}
+        <span className="text-gray-300">|</span>
         <Link
           href="/register"
-          className="text-primary-foreground hover:underline font-medium"
-        >
-          {t('auth.createAccount')}
+          className="text-primary-foreground hover:underline font-medium">
+          {t('auth.register')}
         </Link>
-      </p>
+      </div>
     </div>
   )
 }

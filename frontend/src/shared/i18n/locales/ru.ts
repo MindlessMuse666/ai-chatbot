@@ -18,12 +18,16 @@ export const ru = {
         username: "Введите имя пользователя"
       },
       forgotPassword: "Забыли пароль?",
+      forgotPasswordDescription: "Введите ваш адрес электронной почты, чтобы получить инструкции по восстановлению пароля.",
       login: "Вход",
       register: "Регистрация",
       submit: {
         login: "Войти",
         register: "Зарегистрироваться"
+        register: "Зарегистрироваться",
+        resetPassword: "Отправить"
       },
+      backToLogin: "Вернуться к входу",
       noAccount: "Нет аккаунта?",
       haveAccount: "Уже есть аккаунт?",
       createAccount: "Создать аккаунт",
