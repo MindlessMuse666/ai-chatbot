@@ -15,7 +15,14 @@ import { useChatStore } from '@/entities/chat/model/chat-store';
 import { ChatListItem } from './chat-list-item';
 import { CreateChatButton } from './create-chat-button';
 
-export const ChatList = () => {
+/**
+ * ChatList — компонент списка чатов.
+ * Поддерживает скрытие header и кнопки создания чата (для интеграции в Sidebar).
+ * @param hideHeader — скрыть header (заголовок и кнопку)
+ * @param hideCreateButton — скрыть кнопку создания чата
+ * @module features/chat-list/ui/chat-list
+ */
+export const ChatList = ({ hideHeader = false, hideCreateButton = false }: { hideHeader?: boolean, hideCreateButton?: boolean }) => {
   const router = useRouter();
   const { 
     chats, 
@@ -64,16 +71,17 @@ export const ChatList = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">Chats</h2>
-        <CreateChatButton />
-      </div>
-
+      {!hideHeader && (
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold">Chats</h2>
+          {!hideCreateButton && <CreateChatButton />}
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto">
         {chats.length === 0 && archivedChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <p className="text-gray-500 mb-4">No chats yet</p>
-            <CreateChatButton variant="outline" />
+            {!hideCreateButton && <CreateChatButton variant="outline" />}
           </div>
         ) : (
           <>

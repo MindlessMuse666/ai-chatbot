@@ -1,13 +1,19 @@
 "use client";
 
+import { FC } from "react";
 import { Tabs, Tab } from "@heroui/react";
 import UserList from "@/entities/user/ui/user-list";
 import PermissionsList from "@/entities/permisson/ui/permissions-list";
 import RoleList from "@/entities/role/ui/role-list";
 
-const AdministrationTabs = () => {
+/**
+ * AdministrationTabs — вкладки для управления пользователями, ролями и разрешениями.
+ * @example
+ * <AdministrationTabs />
+ */
+const AdministrationTabs: FC = () => {
   return (
-    <Tabs aria-label="Администрирование" className="w-full mt-2" variant='underlined' size='lg'>
+    <Tabs aria-label="Администрирование" className="w-full mt-2" variant="underlined" size="lg">
       <Tab key="users" title="Пользователи">
         <UserList />
       </Tab>
@@ -22,4 +28,4 @@ const AdministrationTabs = () => {
 };
 
 
-export default AdministrationTabs
+export default AdministrationTabs;

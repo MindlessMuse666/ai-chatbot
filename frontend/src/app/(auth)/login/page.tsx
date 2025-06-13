@@ -1,9 +1,8 @@
 "use client"
 
-
 import { LoginForm } from '@/features/auth/ui/login-form'
 import { useAuthStore } from '@/features/auth/model/auth-store'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -14,7 +13,6 @@ import { toast } from 'sonner'
 export default function LoginPage() {
   const { checkAuth, isLoading } = useAuthStore()
   const searchParams = useSearchParams()
-  const [toastShown, setToastShown] = useState(false)
 
   // Проверка авторизации при монтировании
   useEffect(() => {
@@ -24,7 +22,7 @@ export default function LoginPage() {
   // Показывает тост с ошибкой при переходе на страницу логина с query-параметром 'reason=auth'
   useEffect(() => {
     if (searchParams.get('reason') === 'auth') {
-      toast.error('Для доступа к чату необходимо войти в аккаунт', { id: 'login-required' })
+      toast.error('Для доступа к чату необходимо войти в аккаунт', { id: 'login-required' }) // TODO: переделать на нормальный тост
     }
   }, [searchParams])
 

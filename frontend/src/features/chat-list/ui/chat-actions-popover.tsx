@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import { MoreVertical, Archive, ArchiveRestore, Trash } from 'lucide-react';
 import { Button, Popover, PopoverTrigger, PopoverContent } from '@heroui/react';
 import { toast } from 'sonner';
@@ -11,6 +11,12 @@ interface ChatActionsPopoverProps {
   isArchived?: boolean;
 }
 
+/**
+ * ChatActionsPopover — поповер с действиями над чатом (архив, удаление).
+ * @param chatId — идентификатор чата
+ * @param isArchived — флаг архивного чата
+ * @module features/chat-list/ui/chat-actions-popover
+ */
 export const ChatActionsPopover: React.FC<ChatActionsPopoverProps> = ({ chatId, isArchived }) => {
   const {
     deleteChat,
@@ -20,47 +26,53 @@ export const ChatActionsPopover: React.FC<ChatActionsPopoverProps> = ({ chatId, 
   } = useChatStore();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const handleArchive = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  /**
+   * Обработчик архивации/восстановления чата.
+   */
+  const handleArchive = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsPopoverOpen(false);
     try {
       if (isArchived) {
         await unarchiveChat(chatId);
-        toast.success('Chat unarchived');
+        toast.success('Чат восстановлен');
       } else {
         await archiveChat(chatId);
-        toast.success('Chat archived');
+        toast.success('Чат архивирован');
       }
     } catch (error) {
-      toast.error('Failed to archive chat');
+      toast.error('Ошибка при архивации чата');
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  /**
+   * Обработчик удаления чата (мягкое/жёсткое).
+   */
+  const handleDelete = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsPopoverOpen(false);
     try {
       if (isArchived) {
         await hardDeleteChat(chatId);
-        toast.success('Chat permanently deleted');
+        toast.success('Чат удалён безвозвратно');
       } else {
         await deleteChat(chatId);
-        toast.success('Chat deleted');
+        toast.success('Чат удалён');
       }
     } catch (error) {
-      toast.error('Failed to delete chat');
+      toast.error('Ошибка при удалении чата');
     }
   };
 
   return (
-    <Popover placement="bottom-end" isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+    <Popover placement="right-start" isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <PopoverTrigger>
         <button
           className="bg-transparent border-none p-0 m-0 outline-none focus:outline-none hover:bg-gray-100 rounded transition-colors"
           style={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => setIsPopoverOpen(v => !v)}
           tabIndex={0}
-          aria-label="Chat actions menu"
+          aria-label="Меню действий с чатом"
           type="button"
         >
           <MoreVertical className="h-5 w-5" />

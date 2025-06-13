@@ -1,6 +1,6 @@
 "use client";
 
-import AdministrationTabs from "@/widgets/administation-tabs/ui/administation-tabs"
+import AdministrationTabs from "@/features/administration/ui/administation-tabs"
 
 /**
  * AdministrationPage — страница административного интерфейса.

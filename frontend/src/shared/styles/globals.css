@@ -3,12 +3,16 @@
 @tailwind utilities;
 @import 'highlight.js/styles/github.css';
 
+/* === Цветовые переменные (light/dark) === */
 :root {
   --deep-background: #F5F5F5;
   --background: #F5F5F5;
   --foreground: #312E37;
   --foreground-secondary: #312E37;
   --primary: #E7E7E7;
+  --primary-40: #F7F7F7;
+  --primary-80: #EAEAEA;
+  --primary-90: #E0E0E0;
   --primary-foreground: #00C1A0;
   --logo: url('/logo-dark.svg');
   --code-bg: rgba(0, 0, 0, 0.05);
@@ -24,6 +28,9 @@
   --foreground: #C0BCCA;
   --foreground-secondary: #7E7A86;
   --primary: #2B2830;
+  --primary-40: #18171A;
+  --primary-80: #232127;
+  --primary-90: #35323A;
   --primary-foreground: #00C1A0;
   --logo: url('/logo.svg');
   --code-bg: rgba(0, 0, 0, 0.3);
@@ -39,6 +46,7 @@ body {
   font-family: var(--font-montserrat);
 }
 
+/* === Scrollbar (Simplebar) === */
 .simplebar-scrollbar::before {
   background-color: var(--primary-foreground) !important;
   opacity: 0.8 !important;
@@ -46,26 +54,22 @@ body {
   width: 5px !important;
   left: 3px !important;
 }
-
 .simplebar-scrollbar.simplebar-visible::before {
   opacity: 1 !important;
 }
-
 .simplebar-track.simplebar-vertical {
   width: 10px !important;
   background-color: transparent !important;
 }
-
 .simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
   top: 2px !important;
   bottom: 2px !important;
 }
 
-/* Стили для Markdown */
+/* === Markdown (prose) === */
 .prose {
   color: var(--foreground);
 }
-
 .prose pre {
   background-color: var(--pre-bg);
   border-radius: 0.375rem;
@@ -73,7 +77,6 @@ body {
   overflow-x: auto;
   color: var(--prose-text);
 }
-
 .prose code {
   background-color: var(--code-bg);
   border-radius: 0.25rem;
@@ -81,17 +84,14 @@ body {
   font-family: monospace;
   color: var(--foreground);
 }
-
 .prose pre code {
   background-color: transparent;
   padding: 0;
 }
-
 .prose a {
   color: var(--primary-foreground);
   text-decoration: underline;
 }
-
 .prose blockquote {
   border-left: 4px solid var(--primary-foreground);
   padding-left: 1rem;
@@ -99,61 +99,40 @@ body {
   margin-left: 0;
   color: var(--foreground-secondary);
 }
-
 .prose ul {
   list-style-type: disc;
   padding-left: 1.5rem;
 }
-
 .prose ol {
   list-style-type: decimal;
   padding-left: 1.5rem;
 }
-
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   font-weight: 600;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   color: var(--prose-heading);
 }
-
-.prose h1 {
-  font-size: 1.875rem;
-}
-
-.prose h2 {
-  font-size: 1.5rem;
-}
-
-.prose h3 {
-  font-size: 1.25rem;
-}
-
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
 .prose table {
   width: 100%;
   border-collapse: collapse;
   margin: 1rem 0;
 }
-
 .prose th, .prose td {
   border: 1px solid var(--prose-border);
   padding: 0.5rem;
 }
+.prose th { background-color: var(--primary); }
+.prose p, .prose li { color: var(--foreground); }
 
-.prose th {
-  background-color: var(--primary);
-}
-
-.prose p, .prose li {
-  color: var(--foreground);
-}
-
-/* Переопределение стилей highlight.js для темной темы */
+/* === Highlight.js (override для темной темы) === */
 .dark .hljs {
   background: var(--pre-bg);
   color: #c9d1d9;
 }
-
 .dark .hljs-doctag,
 .dark .hljs-keyword,
 .dark .hljs-meta .hljs-keyword,
@@ -163,14 +142,12 @@ body {
 .dark .hljs-variable.language_ {
   color: #ff7b72;
 }
-
 .dark .hljs-title,
 .dark .hljs-title.class_,
 .dark .hljs-title.class_.inherited__,
 .dark .hljs-title.function_ {
   color: #d2a8ff;
 }
-
 .dark .hljs-attr,
 .dark .hljs-attribute,
 .dark .hljs-literal,
@@ -183,27 +160,30 @@ body {
 .dark .hljs-variable {
   color: #79c0ff;
 }
-
 .dark .hljs-meta .hljs-string,
 .dark .hljs-regexp,
 .dark .hljs-string {
   color: #a5d6ff;
 }
-
 .dark .hljs-built_in,
 .dark .hljs-symbol {
   color: #ffa657;
 }
-
 .dark .hljs-comment,
 .dark .hljs-code,
 .dark .hljs-formula {
   color: #8b949e;
 }
-
 .dark .hljs-name,
 .dark .hljs-quote,
 .dark .hljs-selector-tag,
 .dark .hljs-selector-pseudo {
   color: #7ee787;
+}
+
+/* === Изменение цвета границ для темной темы === */
+.dark .border-primary,
+.dark .border-primary\/30 {
+  --tw-border-opacity: 1;
+  border-color: #232127 !important;
 }

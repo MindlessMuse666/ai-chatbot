@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useTranslation } from 'react-i18next'
 import { useLogin } from '../model/use-auth'
@@ -11,9 +11,6 @@ import { useAuthStore } from '../model/auth-store'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-const Toaster = dynamic(() => import('sonner').then(mod => mod.Toaster), { ssr: false })
 
 /**
  * LoginForm — форма входа пользователя.
@@ -26,11 +23,10 @@ export function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(createLoginSchema(t)),
   })
-  const { login: authStoreLogin, isLoading, user, error } = useAuthStore()
+  const { login: authStoreLogin, isLoading, user, error, clearError } = useAuthStore()
   const router = useRouter()
   const searchParams = useSearchParams()
   const from = searchParams.get('from')
-  const fallback = '/chat'
   const [loginSuccess, setLoginSuccess] = useState(false)
 
   // Описание полей формы
@@ -64,15 +60,16 @@ export function LoginForm() {
       router.replace('/')
     } catch (error) {
       console.error('[LoginForm] Login error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to login')
+      toast.error(error instanceof Error ? error.message : 'Failed to login', { id: 'login-error' })
     }
   }
 
   useEffect(() => {
     if (error) {
-      console.error('[LoginForm] Store error:', error)
+      toast.error(error, { id: 'login-error' })
+      clearError();
     }
-  }, [error])
+  }, [error, clearError])
 
   return (
     <div className="w-full min-w-[400px] p-8 bg-background rounded-xl shadow-lg border border-primary">
