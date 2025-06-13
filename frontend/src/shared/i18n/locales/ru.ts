@@ -23,7 +23,6 @@ export const ru = {
       register: "Регистрация",
       submit: {
         login: "Войти",
-        register: "Зарегистрироваться"
         register: "Зарегистрироваться",
         resetPassword: "Отправить"
       },

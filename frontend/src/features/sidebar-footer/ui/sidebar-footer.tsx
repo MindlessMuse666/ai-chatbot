@@ -5,12 +5,11 @@ import { Settings, HelpCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import SettingsModal from "./settings-modal"
 import HelpModal from "./help-modal"
-import Image from "next/image"
 import { useTheme } from "@/shared/utils/providers/theme-provider"
 
 /**
  * SidebarFooter — современный футер приложения.
- * Повторяет стилистику Header, содержит логотип, копирайт и кнопки "Настройки" и "Помощь".
+ * Повторяет стилистику Header, содержит копирайт, кнопки "Настройки" и "Помощь".
  * @module features/sidebar-footer/ui/sidebar-footer
  */
 const SidebarFooter = () => {
@@ -28,11 +27,8 @@ const SidebarFooter = () => {
   } = useDisclosure()
 
   return (
-    <footer className="border-t border-primary bg-background w-full h-20 flex items-center justify-between px-10 mt-auto">
-      <div className="flex items-center">
-        <Image src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} alt="logo" width={40} height={40} />
-      </div>
-      <div className="flex-1 flex justify-center">
+    <footer className="border-t border-primary bg-background sticky bottom-0 h-20 flex items-center justify-between px-10">
+      <div className="flex items-center flex-1 ml-8">
         <span className="text-[15px] font-medium text-foreground-secondary text-center select-none tracking-wide opacity-90">
           © 2025. Gravitino GPT
         </span>
