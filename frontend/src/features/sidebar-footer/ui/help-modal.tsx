@@ -1,3 +1,14 @@
+/**
+ * HelpModal - модальное окно помощи.
+ * Отображает информацию о приложении, контактные данные и логотип.
+ * 
+ * @component
+ * @param {Object} props - Свойства компонента
+ * @param {boolean} props.isOpen - Флаг открытия модального окна
+ * @param {() => void} props.onClose - Функция закрытия модального окна
+ * @returns {JSX.Element} Модальное окно помощи
+ */
+
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/react"
 import { useTranslation } from "react-i18next"
 import Image from "next/image"
@@ -24,6 +35,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
         </ModalHeader>
         <ModalBody>
           <div className="flex flex-col items-center justify-center py-8">
+            {/* Логотип приложения */}
             <Image 
               src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} 
               alt="logo" 
@@ -31,10 +43,16 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               height={80} 
               className="mb-6" 
             />
+
+            {/* Заголовок */}
             <h3 className="text-2xl font-medium mb-2">Gravitino GPT</h3>
+
+            {/* Описание */}
             <p className="text-foreground-secondary text-center mb-4">
               {t('help.description')}
             </p>
+
+            {/* Контактная информация */}
             <a 
               href={`mailto:${t('help.email')}`}
               className="text-primary-foreground hover:underline"

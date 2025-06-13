@@ -1,3 +1,11 @@
+/**
+ * ChatList - основной компонент списка чатов.
+ * Отображает активные и архивные чаты, управляет их состоянием и навигацией.
+ * 
+ * @component
+ * @returns {JSX.Element} Компонент списка чатов
+ */
+
 "use client";
 
 import { useEffect } from 'react';
@@ -26,17 +34,23 @@ export const ChatList = ({ hideHeader = false, hideCreateButton = false }: { hid
     setCurrentChat,
   } = useChatStore();
 
+  // Загрузка списков чатов при монтировании
   useEffect(() => {
     fetchChats().catch(console.error);
     fetchArchivedChats().catch(console.error);
   }, [fetchChats, fetchArchivedChats]);
 
+  // Обработка ошибок
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
 
+  /**
+   * Обработчик выбора чата
+   * @param chatId - идентификатор выбранного чата
+   */
   const handleChatSelect = (chatId: string) => {
     const chat = chats.find(c => c.id === chatId) || archivedChats.find(c => c.id === chatId);
     if (chat) {
@@ -45,6 +59,7 @@ export const ChatList = ({ hideHeader = false, hideCreateButton = false }: { hid
     }
   };
 
+  // Состояние загрузки
   if (isLoading && chats.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4">
@@ -70,6 +85,7 @@ export const ChatList = ({ hideHeader = false, hideCreateButton = false }: { hid
           </div>
         ) : (
           <>
+            {/* Список активных чатов */}
             {chats.length > 0 && (
               <div className="p-2">
                 {chats.map(chat => {
@@ -98,6 +114,7 @@ export const ChatList = ({ hideHeader = false, hideCreateButton = false }: { hid
               </div>
             )}
 
+            {/* Список архивных чатов */}
             {archivedChats.length > 0 && (
               <div className="mt-4">
                 <div className="px-4 py-2 text-sm font-medium text-gray-500">

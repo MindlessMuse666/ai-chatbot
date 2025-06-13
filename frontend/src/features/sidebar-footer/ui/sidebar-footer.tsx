@@ -1,3 +1,11 @@
+/**
+ * SidebarFooter - компонент подвала сайдбара.
+ * Отображает кнопки настроек и помощи, копирайт, а также управляет модальными окнами.
+ * 
+ * @component
+ * @returns {JSX.Element} Компонент подвала сайдбара
+ */
+
 "use client";
 
 import { Button, useDisclosure } from "@heroui/react"
@@ -15,12 +23,16 @@ import { useTheme } from "@/shared/utils/providers/theme-provider"
  */
 const SidebarFooter = () => {
   const { t } = useTranslation()
+  
+  // Управление состоянием модального окна настроек
   const { theme } = useTheme()
   const { 
     isOpen: isSettingsOpen, 
     onOpen: onSettingsOpen, 
     onClose: onSettingsClose 
   } = useDisclosure()
+
+  // Управление состоянием модального окна помощи
   const { 
     isOpen: isHelpOpen, 
     onOpen: onHelpOpen, 
@@ -32,12 +44,16 @@ const SidebarFooter = () => {
       <div className="flex items-center">
         <Image src={theme === 'light' ? '/logo-dark.svg' : '/logo.svg'} alt="logo" width={40} height={40} />
       </div>
+
+      {/* Копирайт */}
       <div className="flex-1 flex justify-center">
         <span className="text-[15px] font-medium text-foreground-secondary text-center select-none tracking-wide opacity-90">
-          © 2025. Gravitino GPT
+          {t('sidebar.footer.copyright')}
         </span>
       </div>
       <div className="flex items-center gap-2">
+        
+        {/* Кнопка настроек */}
         <Button
           variant="light"
           size="lg"
@@ -47,6 +63,8 @@ const SidebarFooter = () => {
         >
           {t('button.settings')}
         </Button>
+
+        {/* Кнопка помощи */}
         <Button
           variant="light"
           size="lg"
@@ -57,6 +75,8 @@ const SidebarFooter = () => {
           {t('button.help')}
         </Button>
       </div>
+      
+      {/* Модальные окна */}
       <SettingsModal isOpen={isSettingsOpen} onClose={onSettingsClose} />
       <HelpModal isOpen={isHelpOpen} onClose={onHelpClose} />
     </footer>
