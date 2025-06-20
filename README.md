@@ -1,4 +1,4 @@
-# 🤖 AI-Chatbot — умный ИИ-поисковик для ООО "Гравитон"
+# 🤖 AI-Chatbot — умный ИИ-поисковик для ООО «Гравитон-МСК»
 
 ![AI-Chatbot Screenshot](frontend/public/screenshots/chats/chatbox.png "AI-Chatbot Screenshot")
 
